@@ -1,7 +1,7 @@
 /*
  * @Author: lfq
  * @Date: 2020-05-28 14:44:21
- * @LastEditTime: 2020-05-28 23:11:10
+ * @LastEditTime: 2020-05-29 21:14:48
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Rigel\ast_decl.h
@@ -19,8 +19,7 @@
  * and managing scoping issues.
  */
 
-#ifndef _H_ast_decl
-#define _H_ast_decl
+
 
 #include "ast.h"
 #include "list.h"
@@ -28,40 +27,65 @@
 #include "codegen.h"
 #include "ast_block.h"
 #include "utility.h"
-
+#include "ast_type.h"
+#include "list.h"
+#include "ast_expr.h"
 
 class Type;
 class Identifier;
 class BlockItem;
 class Decl;
 class FnDecl;
+class Node;
+
+class Def : public Node{
+  public:
+    List<Expr*> *InitValueList;
+    Identifier *name;
+    Def(Identifier *n,List<Expr*> *ivl){
+      InitValueList=ivl;
+      name=n;
+      name->SetParent(this);
+      InitValueList->SetParentAll(this);
+    }
+    Type* Check(Hashtable<Decl*>* symbolTable);
+    Location* Emit(CodeGenerator *cg);
+};
 
 class Decl : public BlockItem
 {
   protected:
-    Identifier *id;
+    List<Def*> *defs;
   
   public:
-    Decl();
-    Decl(Identifier *name) ;
-    friend ostream& operator<<(ostream& out, Decl *d) { return out << d->id; }
-    const char* GetName() { return id->GetName(); }
-    Identifier* GetIdentifier() { return id; }
-    virtual bool CheckCompatibilityInClass(Decl* newDecl, Hashtable<Decl *>* symbolTable) = 0;
-    virtual Type* Check(Hashtable<Decl*>* symbolTable)=0;
-    virtual Location* Emit(CodeGenerator *cg)=0;
+    Decl(){}
+    Decl(List<Def*> *d) : BlockItem(*(d->Nth(0)->name->GetLocation())) 
+    {
+      Assert(d->Nth(0)->name != NULL);
+      defs->SetParentAll(this);
+    }
+    //friend ostream& operator<<(ostream& out, Decl *d) { return out << d->id; }
+    //const char* GetName() { return id->GetName(); }
+    //Identifier* GetIdentifier() { return id; }
+    //virtual bool CheckCompatibilityInClass(Decl* newDecl, Hashtable<Decl *>* symbolTable) ;
+    virtual Type* Check(Hashtable<Decl*>* symbolTable);
+    virtual Location* Emit(CodeGenerator *cg);
 };
 
 class VarDecl : public Decl 
 {
   protected:
     Type *type;
+
     
   public:
-    VarDecl(Identifier *name, Type *type);
+    VarDecl(List<Def*> *d, Type *t):Decl(d) {
+      Assert(d != NULL && t != NULL);
+      (type=t)->SetParent(this);
+    }
     Type* GetType() { return type; }
     
-    virtual bool CheckCompatibilityInClass(Decl* newDecl, Hashtable<Decl *>* symbolTable);
+    //virtual bool CheckCompatibilityInClass(Decl* newDecl, Hashtable<Decl *>* symbolTable);
     virtual Type* Check(Hashtable<Decl*>* symbolTable);
     virtual Location* Emit(CodeGenerator *cg);
     
@@ -75,11 +99,17 @@ class FnDecl : public Decl
     List<VarDecl*> *formals;
     Type *returnType;
     Stmt *body;
+    Identifier *id;
     
   public:
-    FnDecl();
-    FnDecl(Identifier *name, Type *returnType, List<VarDecl*> *formals);
-    void SetFunctionBody(Stmt *b);
+    FnDecl(Identifier *n, Type *r, List<VarDecl*> *d) 
+    {
+      Assert(n != NULL && r!= NULL && d != NULL);
+      (returnType=r)->SetParent(this);
+      (formals=d)->SetParentAll(this);
+      body = NULL;
+    }
+    void SetFunctionBody(Stmt *b) {(body=b)->SetParent(this);}
     virtual Type* Check(Hashtable<Decl*>* symbolTable);
     virtual Location* Emit(CodeGenerator *cg);
     static bool CheckSignature(FnDecl *o_f, FnDecl *c_f);
@@ -90,4 +120,4 @@ class FnDecl : public Decl
     FnDecl* MakeCopy() { FnDecl* n = new FnDecl(id, returnType, formals); n->SetFunctionBody(body); return n; }
 };
 
-#endif
+//#include "ast_decl.cc"

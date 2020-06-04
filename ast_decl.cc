@@ -1,3 +1,11 @@
+/*
+ * @Author: your name
+ * @Date: 2020-05-29 00:35:53
+ * @LastEditTime: 2020-05-29 11:42:26
+ * @LastEditors: Please set LastEditors
+ * @Description: In User Settings Edit
+ * @FilePath: \compiler\ast_decl.cc
+ */ 
 /* File: ast_decl.cc
  * -----------------
  * Implementation of Decl node classes.
@@ -9,18 +17,17 @@
 #include "list.h"
 
 
-extern Hashtable<Decl *>* __globalST;
+Location * Def::Emit(CodeGenerator* cg) {
+    //TODO
+    return NULL;
+}
 
-Decl::Decl(Identifier* n) : BlockItem(*(n->GetLocation())) {
-    Assert(n != NULL);
-    (id=n)->SetParent(this); 
+Type * Def::Check(Hashtable<Decl *>* symbolTable) {
+    //TODO
+    return NULL;
 }
 
 
-VarDecl::VarDecl(Identifier *n, Type *t) : Decl(n) {
-    Assert(n != NULL && t != NULL);
-    (type=t)->SetParent(this);
-}
 
 Location * VarDecl::Emit(CodeGenerator* cg) {
     //TODO
@@ -43,13 +50,6 @@ bool FnDecl::CheckCompatibilityInClass(Decl* newDecl, Hashtable<Decl *>* symbolT
     return true;
 }
 
-FnDecl::FnDecl(Identifier *n, Type *r, List<VarDecl*> *d) : Decl(n) {
-    Assert(n != NULL && r!= NULL && d != NULL);
-    (returnType=r)->SetParent(this);
-    (formals=d)->SetParentAll(this);
-    body = NULL;
-}
-
 Location * FnDecl::Emit(CodeGenerator* cg) {
     //todo
     return NULL;
@@ -66,6 +66,4 @@ bool FnDecl::CheckSignature(FnDecl *o_f, FnDecl *c_f) {
     return true;
 }
 
-void FnDecl::SetFunctionBody(Stmt *b) { 
-    (body=b)->SetParent(this);
-}
+

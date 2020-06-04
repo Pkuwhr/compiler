@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-05-28 23:11:57
- * @LastEditTime: 2020-05-28 23:26:01
+ * @LastEditTime: 2020-05-29 16:48:26
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Rigel\expr.cc
@@ -62,11 +62,10 @@ LValue::LValue(yyltype loc, Expr *b, Expr *s) : Expr(loc) {
 }
 
 Type* LValue::Check(Hashtable<Decl*>* parentST) {
-    Type* b_t = base->Check(parentST);
-    Type* s_t = subscript->Check(parentST);
+    //TODO
 
     
-    return (dynamic_cast<ArrayType *>(b_t))->BaseType();
+    return NULL;
 }
 
 Location* LValue::Emit(CodeGenerator *cg) {

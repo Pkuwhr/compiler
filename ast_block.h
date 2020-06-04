@@ -1,7 +1,7 @@
 /*
  * @Author: lfq
  * @Date: 2020-05-28 17:19:45
- * @LastEditTime: 2020-05-28 23:13:22
+ * @LastEditTime: 2020-05-29 21:24:04
  * @LastEditors: Please set LastEditors
  * @Description: stmtBlock defination
  * @FilePath: \Rigel\ast_block.h
@@ -40,6 +40,8 @@ class BlockItem : public Node
         virtual Type* Check(Hashtable<Decl*>* symbolTable)=0;
         virtual Location* Emit(CodeGenerator *cg)=0;
 };
+
+
 
 class Stmt : public BlockItem
 {

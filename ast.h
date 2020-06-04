@@ -1,7 +1,7 @@
 /*
  * @Author: lfq
  * @Date: 2020-05-28 10:16:09
- * @LastEditTime: 2020-05-28 14:41:47
+ * @LastEditTime: 2020-05-29 17:03:54
  * @Description: Declear some classes of ast
  * @FilePath: \Rigel\ast.h
  */ 
@@ -15,6 +15,7 @@
 using namespace std;
 
 class Decl;
+class Expr;
 
 class Node  {
   protected:
@@ -36,9 +37,10 @@ class Identifier : public Node
 {
   protected:
     char *name;
+    List<Expr*> *Elist;
     
   public:
-    Identifier(yyltype loc, const char *name);
+    Identifier(yyltype loc, const char *name, List<Expr*> *el);
     friend ostream& operator<<(ostream& out, Identifier *id) { return out << id->name; }
     const char* GetName() { return name; }
 };

@@ -1,7 +1,7 @@
 /*
  * @Author: lfq
  * @Date: 2020-05-28 20:08:00
- * @LastEditTime: 2020-05-28 21:33:41
+ * @LastEditTime: 2020-05-29 09:45:07
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Rigel\ast_exp.h
@@ -142,3 +142,4 @@ class Call : public Expr
     virtual Type* Check(Hashtable<Decl*>* symbolTable);
     virtual Location* Emit(CodeGenerator *cg);    
 };
+

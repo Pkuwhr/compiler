@@ -1,6 +1,7 @@
             
 编译单元 CompUnit         → DeclList 
-声明列表 DeclList         → DeclList | Decl 
+声明列表 DeclList         → DeclList  
+                          | Decl     
 声明 Decl                 → ConstDecl | VarDecl | FuncDecl
 常量声明 ConstDecl        → 'const' BType ConstDefList ';' 
 基本类型 BType            → 'int' | 'void'                               //void只会在function之前出现
