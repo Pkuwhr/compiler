@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-05-28 23:11:57
- * @LastEditTime: 2020-05-29 16:48:26
+ * @LastEditTime: 2020-06-05 20:31:32
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Rigel\expr.cc
@@ -56,9 +56,9 @@ BinaryExpr::BinaryExpr(Expr *l, Operator *o, Expr *r)
     (right=r)->SetParent(this);
 }
   
-LValue::LValue(yyltype loc, Expr *b, Expr *s) : Expr(loc) {
+LValue::LValue(yyltype loc, Expr *b, List<Expr *> *o) : Expr(loc) {
     (base=b)->SetParent(this); 
-    (subscript=s)->SetParent(this);
+    (offset=o)->SetParentAll(this);
 }
 
 Type* LValue::Check(Hashtable<Decl*>* parentST) {

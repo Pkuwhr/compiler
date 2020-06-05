@@ -1,7 +1,7 @@
 /*
  * @Author: lfq
  * @Date: 2020-05-28 15:50:17
- * @LastEditTime: 2020-05-29 17:01:07
+ * @LastEditTime: 2020-06-05 20:41:43
  * @LastEditors: Please set LastEditors
  * @Description: Type define
  * @FilePath: \Rigel\ast_type.h
@@ -25,7 +25,7 @@ class Decl;
 class Type : public Node 
 {
   protected:
-    int typeKind; //1:int 2:const 3:void 
+    int typeKind; //1:int 2:const 3:void 4:string
 
   public :
 

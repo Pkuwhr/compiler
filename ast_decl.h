@@ -1,7 +1,7 @@
 /*
  * @Author: lfq
  * @Date: 2020-05-28 14:44:21
- * @LastEditTime: 2020-05-29 21:14:48
+ * @LastEditTime: 2020-06-05 20:56:39
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Rigel\ast_decl.h
@@ -40,13 +40,13 @@ class Node;
 
 class Def : public Node{
   public:
-    List<Expr*> *InitValueList;
+    InitValue *InitValueList;
     Identifier *name;
-    Def(Identifier *n,List<Expr*> *ivl){
+    Def(Identifier *n,InitValue *ivl){
       InitValueList=ivl;
       name=n;
       name->SetParent(this);
-      InitValueList->SetParentAll(this);
+      InitValueList->SetParent(this);
     }
     Type* Check(Hashtable<Decl*>* symbolTable);
     Location* Emit(CodeGenerator *cg);

@@ -1,7 +1,7 @@
 /*
  * @Author: lfq
  * @Date: 2020-05-28 20:08:00
- * @LastEditTime: 2020-05-29 09:45:07
+ * @LastEditTime: 2020-06-05 20:59:03
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Rigel\ast_exp.h
@@ -35,6 +35,17 @@ class IntConstant : public Expr
     virtual Location* Emit(CodeGenerator *cg);
 };
 
+class StringConstant : public Expr 
+{ 
+  protected:
+    char *value;
+    
+  public:
+    StringConstant(yyltype loc, const char *val);
+    virtual Type* Check(Hashtable<Decl*>* symbolTable);
+    virtual Location* Emit(CodeGenerator *cg);
+};
+
 class Operator : public Node 
 {
   protected:
@@ -63,10 +74,11 @@ class BinaryExpr : public Expr
 class LValue : public Expr 
 {
   protected:
-    Expr *base, *subscript;
+    Expr *base;
+    List<Expr *> *offset;
     
   public:
-    LValue(yyltype loc, Expr *base, Expr *subscript);
+    LValue(yyltype loc, Expr *base, List<Expr *> *offset);
     virtual Type* Check(Hashtable<Decl*>* symbolTable);
     virtual Location* Emit(CodeGenerator *cg);
     Location* EmitMemoryLocation(CodeGenerator *cg);
@@ -141,5 +153,16 @@ class Call : public Expr
     Call(yyltype loc, Identifier *field, List<Expr*> *args);
     virtual Type* Check(Hashtable<Decl*>* symbolTable);
     virtual Location* Emit(CodeGenerator *cg);    
+};
+
+class InitValue : public Expr
+{
+  protected:
+    List<Expr*> *InitValueList;
+  
+  public:
+    InitValue(List<Expr*> *InitValueList);
+    virtual Type* Check(Hashtable<Decl*>* symbolTable);
+    virtual Location* Emit(CodeGenerator *cg);
 };
 

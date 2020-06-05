@@ -30,7 +30,7 @@
 extern Hashtable<Decl *>* __globalST;
 
 Type::Type(int n) {
-    Assert(n < 4);
+    Assert(n < 5);
     typeKind = n;
 }
 
