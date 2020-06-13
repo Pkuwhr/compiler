@@ -21,7 +21,7 @@ class test
         x = a + b;
         */
         int intint;
-        int 11m;
+        int m;
         if (a == b)
         {
             if (c == d)
@@ -34,7 +34,7 @@ class test
             if (c == d)
                 Print("elseif");
             else
-                Print("elseelse")
+                Print("elseelse");
         }
     }   
 }
