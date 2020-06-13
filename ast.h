@@ -3,7 +3,7 @@
  * @Date: 2020-05-28 10:16:09
  * @LastEditTime: 2020-05-29 17:03:54
  * @Description: Declear some classes of ast
- * @FilePath: \Rigel\ast.h
+ * @FilePath: \compiler\ast.h
  */ 
 
 #include <stdlib.h>   // for NULL

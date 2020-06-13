@@ -4,7 +4,7 @@
  * @LastEditTime: 2020-05-28 19:29:23
  * @LastEditors: Please set LastEditors
  * @Description: Implement symbol table
- * @FilePath: \Rigel\hashtable.cc
+ * @FilePath: \compiler\hashtable.cc
  */ 
 
 //#include"hashtable.h"

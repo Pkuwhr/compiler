@@ -7,7 +7,7 @@
  *               This is a debug tool. 
  *               Use "Assert" in any place you want to test the errors if you has included "utility.h"
  *               After fixing ever bugs, please remove this file.
- * @FilePath: \Rigel\utility.h
+ * @FilePath: \compiler\utility.h
  */ 
 
 

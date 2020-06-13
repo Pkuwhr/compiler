@@ -6,7 +6,7 @@
  * @Description: copy from 13. This is a list class which is 
  *               implemented by deque so that we can use [] to
  *               visit any element.
- * @FilePath: \Rigel\list.h
+ * @FilePath: \compiler\list.h
  */ 
 
 /**

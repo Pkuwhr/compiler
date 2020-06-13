@@ -4,7 +4,7 @@
  * @LastEditTime: 2020-05-29 17:05:23
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
- * @FilePath: \Rigel\ast.cc
+ * @FilePath: \compiler\ast.cc
  */ 
 
 

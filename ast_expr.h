@@ -4,7 +4,7 @@
  * @LastEditTime: 2020-06-05 20:59:03
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
- * @FilePath: \Rigel\ast_exp.h
+ * @FilePath: \compiler\ast_exp.h
  */ 
 
 #include "ast.h"

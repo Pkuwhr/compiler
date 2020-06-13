@@ -4,7 +4,7 @@
  * @LastEditTime: 2020-06-05 20:41:43
  * @LastEditors: Please set LastEditors
  * @Description: Type define
- * @FilePath: \Rigel\ast_type.h
+ * @FilePath: \compiler\ast_type.h
  */ 
 
  

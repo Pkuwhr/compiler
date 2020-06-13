@@ -34,6 +34,9 @@ static void DoBeforeEachAction();
 
 %}
 
+// windows下要加这个
+%option noyywrap
+
 /* States
  * ------
  * A little wrinkle on states is the COPY exclusive state which

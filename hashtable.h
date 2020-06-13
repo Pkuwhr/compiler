@@ -3,7 +3,7 @@
  * @Date: 2020-05-28 10:26:05
  * @LastEditTime: 2020-05-28 19:30:46
  * @Description: Declaration of symbol table
- * @FilePath: \Rigel\hashtable.h
+ * @FilePath: \compiler\hashtable.h
  */ 
 
 #include<map>

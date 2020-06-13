@@ -4,7 +4,7 @@
  * @LastEditTime: 2020-05-29 21:24:04
  * @LastEditors: Please set LastEditors
  * @Description: stmtBlock defination
- * @FilePath: \Rigel\ast_block.h
+ * @FilePath: \compiler\ast_block.h
  */ 
 
 #include "list.h"

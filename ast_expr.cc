@@ -4,7 +4,7 @@
  * @LastEditTime: 2020-06-05 20:31:32
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
- * @FilePath: \Rigel\expr.cc
+ * @FilePath: \compiler\expr.cc
  */ 
 
 /* File: ast_expr.cc
