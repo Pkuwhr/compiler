@@ -6,7 +6,18 @@
         {
             "label": "make",
             "type": "shell",
-            "command": "mingw32-make"
+            "command": "mingw32-make",
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "make",
+            "type": "shell",
+            "command": "mingw32-make clean",
+            "problemMatcher": [],
         }
     ]
 }
