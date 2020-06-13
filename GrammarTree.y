@@ -1,3 +1,11 @@
+/*
+ * @Date: 2020-06-13 17:07:18
+ * @LastEditors: zyk
+ * @LastEditTime: 2020-06-13 22:11:26
+ * @FilePath: \compiler\GrammarTree.y
+ */ 
+
+
 %{
     #include<stdio.h>
     #include<unistd.h>
@@ -13,205 +21,421 @@
     GrammarTree grammar_tree;
 }
 
-%token <grammar_tree> SPSEMICOLON SPCOMMA SPDOT SPLEFTBRACE SPRIGHTBRACE // 界符
-%token <grammar_tree> OPLEFTPRNT OPRIGHTPRNT OPLEFTBRACKET OPRIGHTBRACKET // () []看字操作符
-%token <grammar_tree> OPPLUS OPMINUS OPMULTIPLY OPDIVIDE OPASSIGN // 操作符 
-%token <grammar_tree> OPAND OPOR OPNOT // 位操作符
-%token <grammar_tree> OPEQUAL OPNOTEQUAL OPGREAT OPLIGHT OPGREATEQ OPLIGHTEQ // 判断符
-%token <grammar_tree> TYPEVOID TYPEINTEGER TYPEFLOAT TYPEBOOL TYPESTRING // 类型符
-%token <grammar_tree> KEYCLASS KEYNEW KEYEXTENDS KEYTHIS KEYINSTANCEOF
-%token <grammar_tree> KEYIF KEYELSE KEYFOR KEYWHILE KEYBREAK
-%token <grammar_tree> KEYRETURN 
-%token <grammar_tree> KEYSTATIC
-%token <grammar_tree> KEYPRINT KEYREADINTEGER KEYREADLINE
-%token <grammar_tree> CONSTANTNULL CONSTANTBOOL CONSTANTINTD CONSTANTINTH CONSTANTFLOAT CONSTANTFLOATSC CONSTANTSTRING
-%token <grammar_tree> IDENTIFIER
+// 以下为终结符集
+%token <grammar_tree> T_Void T_Int T_Const
+%token <grammar_tree> T_While T_If T_Else T_Return T_Break T_Continue
+%token <grammar_tree> T_LessEqual T_GreaterEqual T_Equal T_NotEqual T_Dims
+%token <grammar_tree> T_And T_Or
+%token <grammar_tree> T_Identifier T_StringConstant T_IntConstant
 
-%type <grammar_tree> Program ClassDefs VariableDef CommaIdentifiers Variable Type Variables Formals FunctionDef ClassDef Fields Field StmtBlock Stmts Stmt SimpleStmt LValue Call Actuals Exprs ForStmt WhileStmt IfStmt ReturnStmt BreakStmt PrintStmt BoolExpr Expr Constant
+// 用于消除if-else语句的移进/归约冲突
+%token   T_NoElse
+%nonassoc T_NoElse
+%nonassoc T_Else
 
-%right OPASSIGN
-%left OPOR
-%left OPAND
-%left OPLIGHT OPLIGHTEQ OPGREAT OPGREATEQ OPEQUAL OPNOTEQUAL
-%left OPPLUS OPMINUS
-%left OPMULTIPLY OPDIVIDE
-%right OPNOT
-%left SPDOT
-%left OPRIGHTBRACKET
-%right OPLEFTBRACKET
-%left OPRIGHTPRNT
-%right OPLEFTPRNT
+// 以下为非终结符集
+%type <grammar_tree> CompUnit Decl FuncDef ConstDecl BType ConstDefSeq
+%type <grammar_tree> ConstDef ConstInitVal ConstArraySubSeq ConstExp
+%type <grammar_tree> ArraySubSeq Exp ConstInitValSeq VarDecl VarDefSeq VarDef
+%type <grammar_tree> InitVal InitValSeq Block FuncFParams
+%type <grammar_tree> FuncFParam BlockItemSeq BlockItem Stmt LVal Cond
+%type <grammar_tree> AddExp LOrExp Number PrimaryExp UnaryOp UnaryExp
+%type <grammar_tree> FuncRParams MulExp RelExp EqExp LAndExp
 
-%nonassoc LOWER_THAN_ELSE
-%nonassoc KEYELSE 
+
 
 %%
-Program: ClassDefs { 
-       $$ = CreateGrammarTree("Program", 1, $1); 
-       if (two_tuples_trigger)
-       {
-           printf("__________________________________________________\n\n");
-           printf("The two-tuples of \"Lexical Analyzing\" are printed!\n");
-           printf("__________________________________________________\n");
-       }
-       if (!gmerror) {
-           printf("\nNow print the grammar-tree of \"Grammar Analyzing\":\n");
-           printf("__________________________________________________\n\n"); 
-           TraverseGrammerTree($$, 0);
-           printf("__________________________________________________\n\n"); 
-           printf("The grammar-tree of \"Grammar Analyzing\" is printed!\n\n"); 
-       }
-       }
-       ;
+Program : CompUnit {
+    //
+}
+;
 
-ClassDefs: ClassDef { $$ = CreateGrammarTree("ClassDefs", 1, $1); }
-         | ClassDefs ClassDef { $$ = CreateGrammarTree("ClassDefs", 2, $1, $2); }
-         ;
+CompUnit:
+    Decl {
+    // 
+}
+|   FuncDef {
+    //
+}
+|   CompUnit Decl {
+    //
+}
+|   CompUnit FuncDef {
+    //
+}
+;
 
-VariableDef: Variable SPSEMICOLON { $$ = CreateGrammarTree("VariableDef", 2, $1, $2); }
-           | Variable CommaIdentifiers SPSEMICOLON { $$ = CreateGrammarTree("VariableDef", 3, $1, $2, $3); } 
-           | error SPSEMICOLON { $$ = CreateGrammarTree("VariableDef", 1, $2); gmerror += 1; }
-           ;
+Decl:
+    ConstDecl {
+    //
+}
+|   VarDecl {
+    //
+}
+;
 
-CommaIdentifiers: SPCOMMA IDENTIFIER { $$ = CreateGrammarTree("CommaIdentifiers", 2, $1, $2); } 
-                | CommaIdentifiers SPCOMMA IDENTIFIER { $$ = CreateGrammarTree("CommaIdentifiers", 3, $1, $2, $3); } 
-                ;
+ConstDecl:
+    T_Const BType ConstDefSeq ';' {
+    //
+}
+;
 
-Variable: Type IDENTIFIER { $$ = CreateGrammarTree("Variable", 2, $1, $2); }
-        ;
+ConstDefSeq:
+    ConstDef {
+    //
+}
+|   ConstDefSeq ',' ConstDef {
+    //
+}
+;
 
-Type: TYPEINTEGER { $$ = CreateGrammarTree("Type", 1, $1); }
-    | TYPEFLOAT { $$ = CreateGrammarTree("Type", 1, $1); }
-    | TYPEBOOL { $$ = CreateGrammarTree("Type", 1, $1); }
-    | TYPESTRING { $$ = CreateGrammarTree("Type", 1, $1); }
-    | TYPEVOID { $$ = CreateGrammarTree("Type", 1, $1); }
-    | KEYCLASS IDENTIFIER { $$ = CreateGrammarTree("Type", 2, $1, $2); }
-    | Type OPLEFTBRACKET OPRIGHTBRACKET { $$ = CreateGrammarTree("Type", 3, $1, $2, $3); }
-    ;
+BType:
+    T_Void {
+    //
+}
+|   T_Int {
+    //
+}
+;
 
-Variables: Variable { $$ = CreateGrammarTree("Variables", 1, $1); }
-         | Variables SPCOMMA Variable { $$ = CreateGrammarTree("Variables", 3, $1, $2, $3); }
-         ;
+ConstDef:
+    T_Identifier '=' ConstInitVal {
+    //
+}
+|   T_Identifier ConstArraySubSeq '=' ConstInitVal {
+    //
+}
+;
 
-Formals: { $$ = CreateGrammarTree("Formals", 0, -1); }
-       | Variables { $$ = CreateGrammarTree("Formals", 1, $1); }
-       ;
+ConstArraySubSeq:
+    '[' ConstExp ']' {
+    //
+}
+| ConstArraySubSeq '[' ConstExp ']' {
+    //
+}
+;
 
-FunctionDef: Type IDENTIFIER OPLEFTPRNT Formals OPRIGHTPRNT StmtBlock { $$ = CreateGrammarTree("FunctionDef", 6, $1, $2, $3, $4, $5, $6); }
-           | KEYSTATIC Type IDENTIFIER OPLEFTPRNT Formals OPRIGHTPRNT StmtBlock { $$ = CreateGrammarTree("FunctionDef", 7, $1, $2, $3, $4, $5, $6, $7); }
-           ;
+ArraySubSeq:
+    '[' Exp ']' {
+    //
+}
+| ArraySubSeq '[' Exp ']' {
+    //
+}
+;
 
-ClassDef: KEYCLASS IDENTIFIER SPLEFTBRACE Fields SPRIGHTBRACE { $$ = CreateGrammarTree("ClassDef", 5, $1, $2, $3, $4, $5); }
-        | KEYCLASS IDENTIFIER KEYEXTENDS IDENTIFIER SPLEFTBRACE Fields SPRIGHTBRACE { $$ = CreateGrammarTree("ClassDef", 7, $1, $2, $3, $4, $5, $6, $7); }
-        | error SPRIGHTBRACE { $$ = CreateGrammarTree("ClassDef", 1, $2); gmerror += 1; }
-        ;
+ConstInitVal:
+    ConstExp {
+    //
+}
+|   '{' ConstInitValSeq '}' {
+    //
+}
+|   '{' '}' {
+    //
+}
+;
 
-Fields: { $$ = CreateGrammarTree("Fields", 0, -1); }
-      | Field Fields { $$ = CreateGrammarTree("Fields", 2, $1, $2); }
-      ;
+ConstInitValSeq:
+    ConstInitVal {
+    //
+}
+|   ConstInitValSeq ',' ConstInitVal {
+    //
+}
+;
 
-Field: VariableDef { $$ = CreateGrammarTree("Field", 1, $1); }
-     | FunctionDef { $$ = CreateGrammarTree("Field", 1, $1); }
-     ;
+VarDecl:
+    BType VarDefSeq ';' {
+    //
+}
+;
 
-StmtBlock: SPLEFTBRACE Stmts SPRIGHTBRACE { $$ = CreateGrammarTree("StmtBlock", 3, $1, $2, $3); }
-         | error SPRIGHTBRACE { $$ = CreateGrammarTree("StmtBlock", 1, $2); gmerror += 1; }
-         ;
+VarDefSeq:
+    VarDef {
+    //
+}
+|   VarDefSeq ',' VarDef {
+    //
+}
+;
 
-Stmts: { $$ = CreateGrammarTree("Stmts", 0, -1); }
-     | Stmt Stmts { $$ = CreateGrammarTree("Stmts", 2, $1, $2); }
-     ;
+VarDef:
+    T_Identifier {
+    //
+}
+|   T_Identifier ConstArraySubSeq {
+    //
+}
+|   T_Identifier '=' InitVal {
+    //
+} 
+|   T_Identifier ConstArraySubSeq '=' InitVal {
+    //
+}
+;
 
-Stmt: VariableDef { $$ = CreateGrammarTree("Stmt", 1, $1); }
-    | SimpleStmt SPSEMICOLON { $$ = CreateGrammarTree("Stmt", 2, $1, $2); }
-    | IfStmt { $$ = CreateGrammarTree("Stmt", 1, $1); }
-    | WhileStmt { $$ = CreateGrammarTree("Stmt", 1, $1); }
-    | ForStmt { $$ = CreateGrammarTree("Stmt", 1, $1); }
-    | BreakStmt SPSEMICOLON { $$ = CreateGrammarTree("Stmt", 2, $1, $2); }
-    | ReturnStmt SPSEMICOLON { $$ = CreateGrammarTree("Stmt", 2, $1, $2); }
-    | PrintStmt SPSEMICOLON { $$ = CreateGrammarTree("Stmt", 2, $1, $2); }
-    | StmtBlock { $$ = CreateGrammarTree("Stmt", 1, $1); }
-    ;
+InitVal:
+    Exp {
+    //    
+}
+|   '{' InitValSeq '}' {
+    //
+}
+;
 
-SimpleStmt: { $$ = CreateGrammarTree("SimpleStmt", 0, -1); } 
-          | LValue OPASSIGN Expr { $$ = CreateGrammarTree("SimpleStmt", 3, $1, $2, $3); } 
-          | Call { $$ = CreateGrammarTree("SimpleStmt", 1, $1); } 
-          ;
+InitValSeq:
+    InitVal {
+    //
+}
+|   InitValSeq ',' InitVal {
+    //
+}
+;
 
-LValue: IDENTIFIER { $$ = CreateGrammarTree("LValue", 1, $1); }  
-      | Expr SPDOT IDENTIFIER { $$ = CreateGrammarTree("LValue", 3, $1, $2, $3); }  
-      | Expr OPLEFTBRACKET Expr OPRIGHTBRACKET { $$ = CreateGrammarTree("LValue", 4, $1, $2, $3, $4); }  
-      ;
+FuncDef:
+    BType T_Identifier '(' ')' Block {
+    //
+}
+|   BType T_Identifier '(' FuncFParams ')' Block {
+    //
+}
+;
 
-Call: IDENTIFIER OPLEFTPRNT Actuals OPRIGHTPRNT { $$ = CreateGrammarTree("Call", 4, $1, $2, $3, $4); }  
-    | Expr SPDOT IDENTIFIER OPLEFTPRNT Actuals OPRIGHTPRNT { $$ = CreateGrammarTree("Call", 6, $1, $2, $3, $4, $5, $6); }  
-    ;
+FuncFParams:
+    FuncFParam {
+    //
+}
+|   FuncFParams ',' FuncFParam {
+    //
+}
+;
 
-Actuals: { $$ = CreateGrammarTree("Actuals", 0, -1); }
-       | Exprs { $$ = CreateGrammarTree("Actuals", 1, $1); }
+FuncFParam:
+    BType T_Identifier {
+    //
+}
+|   BType T_Identifier '[' ']' ArraySubSeq {
+    //
+}
+;
 
-Exprs: Expr { $$ = CreateGrammarTree("Exprs", 1, $1); }
-     | Exprs SPCOMMA Expr { $$ = CreateGrammarTree("Exprs", 3, $1, $2, $3); }
-     ;
+Block:
+    '{' '}' {
+    //
+}
+|   '{' BlockItemSeq '}' {
+    //
+}
+;
 
-ForStmt: KEYFOR OPLEFTPRNT SimpleStmt SPSEMICOLON BoolExpr SPSEMICOLON SimpleStmt OPRIGHTPRNT Stmt { $$ = CreateGrammarTree("ForStmt", 9, $1, $2, $3, $4, $5, $6, $7, $8, $9); }  
-       ;
+BlockItemSeq:
+    BlockItem {
+    //
+}
+|   BlockItemSeq BlockItem {
+    //
+}
+;
 
-WhileStmt: KEYWHILE OPLEFTPRNT BoolExpr OPRIGHTPRNT Stmt { $$ = CreateGrammarTree("WhileStmt", 5, $1, $2, $3, $4, $5); }  
-         ;
+BlockItem:
+    Decl {
+    //
+}
+|   Stmt {
+    //
+}
+;
 
-IfStmt: KEYIF OPLEFTPRNT BoolExpr OPRIGHTPRNT Stmt %prec LOWER_THAN_ELSE { $$ = CreateGrammarTree("IfStmt", 5, $1, $2, $3, $4, $5); }  
-      | KEYIF OPLEFTPRNT BoolExpr OPRIGHTPRNT Stmt KEYELSE Stmt { $$ = CreateGrammarTree("IfStmt", 7, $1, $2, $3, $4, $5, $6, $7); }  
-      ;
+Stmt:
+    LVal '=' Exp ';' {
+    //
+}
+|   Exp ';' {
+    //
+}  
+|   ';' {
+    //
+}
+|   Block {
+    //
+}
+|   T_If '(' Cond ')' Stmt %prec T_NoElse {
+    //
+}
+|   T_If '(' Cond ')' Stmt T_Else Stmt {
+    //
+}
+|   T_While '(' Cond ')' Stmt {
+    //
+}
+|   T_Break ';' {
+    //
+}
+|   T_Continue ';' {
+    //
+}
+|   T_Return Exp ';' {
+    //
+}
+|   T_Return ';' {
+    //
+}
+;
 
-ReturnStmt: KEYRETURN { $$ = CreateGrammarTree("ReturnStmt", 1, $1); }
-          | KEYRETURN Expr { $$ = CreateGrammarTree("ReturnStmt", 2, $1, $2); } 
-          ;
+Exp:
+    AddExp {
+    //
+}
+;
 
-BreakStmt: KEYBREAK { $$ = CreateGrammarTree("BreakStmt", 1, $1); }
-         ;
+Cond:
+    LOrExp {
+    //
+}
+;
 
-PrintStmt: KEYPRINT OPLEFTPRNT Exprs OPRIGHTPRNT { $$ = CreateGrammarTree("PrintStmt", 4, $1, $2, $3, $4); }  
-         ;
+LVal:
+    T_Identifier ArraySubSeq {
+    //
+}
+;
 
-BoolExpr: Expr { $$ = CreateGrammarTree("BoolExpr", 1, $1); }
-        ;
+PrimaryExp:
+    '(' Exp ')' {
+    //
+}
+|   LVal {
+    //
+}
+|   Number {
+    //
+}
+;
 
-Expr: Constant { $$ = CreateGrammarTree("Expr", 1, $1); }
-    | LValue { $$ = CreateGrammarTree("Expr", 1, $1); }
-    | KEYTHIS { $$ = CreateGrammarTree("Expr", 1, $1); }
-    | Call { $$ = CreateGrammarTree("Expr", 1, $1); }
-    | OPLEFTPRNT Expr OPRIGHTPRNT { $$ = CreateGrammarTree("Expr", 3, $1, $2, $3); }
-    | Expr OPPLUS Expr { $$ = CreateGrammarTree("Expr", 3, $1, $2, $3); }
-    | Expr OPMINUS Expr { $$ = CreateGrammarTree("Expr", 3, $1, $2, $3); }
-    | Expr OPMULTIPLY Expr { $$ = CreateGrammarTree("Expr", 3, $1, $2, $3); }
-    | Expr OPDIVIDE Expr { $$ = CreateGrammarTree("Expr", 3, $1, $2, $3); }
-    | OPMINUS Expr { $$ = CreateGrammarTree("Expr", 2, $1, $2); }
-    | Expr OPLIGHT Expr { $$ = CreateGrammarTree("Expr", 3, $1, $2, $3); }
-    | Expr OPLIGHTEQ Expr { $$ = CreateGrammarTree("Expr", 3, $1, $2, $3); }
-    | Expr OPGREAT Expr { $$ = CreateGrammarTree("Expr", 3, $1, $2, $3); }
-    | Expr OPGREATEQ Expr { $$ = CreateGrammarTree("Expr", 3, $1, $2, $3); }
-    | Expr OPEQUAL Expr { $$ = CreateGrammarTree("Expr", 3, $1, $2, $3); }
-    | Expr OPNOTEQUAL Expr { $$ = CreateGrammarTree("Expr", 3, $1, $2, $3); }
-    | Expr OPAND Expr { $$ = CreateGrammarTree("Expr", 3, $1, $2, $3); }
-    | Expr OPOR Expr { $$ = CreateGrammarTree("Expr", 3, $1, $2, $3); }
-    | OPNOT Expr { $$ = CreateGrammarTree("Expr", 2, $1, $2); }
-    | KEYREADINTEGER OPLEFTPRNT OPRIGHTPRNT { $$ = CreateGrammarTree("Expr", 3, $1, $2, $3); }
-    | KEYREADLINE OPLEFTPRNT OPRIGHTPRNT { $$ = CreateGrammarTree("Expr", 3, $1, $2, $3); }
-    | KEYNEW IDENTIFIER OPLEFTPRNT OPRIGHTPRNT { $$ = CreateGrammarTree("Expr", 4, $1, $2, $3, $4); }
-    | KEYNEW Type OPLEFTBRACKET Expr OPRIGHTBRACKET { $$ = CreateGrammarTree("Expr", 5, $1, $2, $3, $4, $5); }
-    | KEYINSTANCEOF OPLEFTPRNT Expr SPCOMMA IDENTIFIER OPRIGHTPRNT { $$ = CreateGrammarTree("Expr", 6, $1, $2, $3, $4, $5, $6); }
-    | OPLEFTPRNT KEYCLASS IDENTIFIER OPRIGHTPRNT Expr { $$ = CreateGrammarTree("Expr", 5, $1, $2, $3, $4, $5); }
-    ;
+Number:
+    T_IntConstant {
+    //
+}
+;
 
-Constant: CONSTANTINTD { $$ = CreateGrammarTree("Constant", 1, $1); }
-        | CONSTANTINTH { $$ = CreateGrammarTree("Constant", 1, $1); }
-        | CONSTANTFLOAT { $$ = CreateGrammarTree("Constant", 1, $1); }
-        | CONSTANTFLOATSC { $$ = CreateGrammarTree("Constant", 1, $1); }
-        | CONSTANTBOOL { $$ = CreateGrammarTree("Constant", 1, $1); }
-        | CONSTANTSTRING { $$ = CreateGrammarTree("Constant", 1, $1); }
-        | CONSTANTNULL { $$ = CreateGrammarTree("Constant", 1, $1); }
-        ;
+UnaryExp:
+    PrimaryExp {
+    //
+}
+|   T_Identifier '(' FuncRParams ')' {
+    //
+}
+|   T_Identifier '(' ')' {
+    //
+}
+|   UnaryOp UnaryExp {
+    //
+}
+;
+
+UnaryOp:
+    '+' {
+    //
+}
+|   '-' {
+    //
+}
+|   '!' {
+    //
+}
+;
+
+FuncRParams:
+    Exp {
+    //
+}
+|   FuncRParams ',' Exp {
+    //
+}
+;
+
+MulExp:
+    UnaryExp {
+    //
+}
+|   MulExp '*' UnaryExp {
+    //
+}
+|   MulExp '/' UnaryExp {
+    //
+}
+|   MulExp '%' UnaryExp {
+    //
+}
+;
+
+AddExp:
+    MulExp {
+    //
+}
+|   AddExp '+' MulExp {
+    //
+}
+|   AddExp '-' MulExp {
+    //
+}
+;
+
+RelExp:
+    AddExp {
+    //
+}
+|   RelExp '<' AddExp {
+    //
+}
+|   RelExp T_LessEqual AddExp {
+    //
+}
+|   RelExp '>' AddExp {
+    //
+}
+|   RelExp T_GreaterEqual AddExp {
+    //
+}
+;
+ 
+EqExp:
+    RelExp {
+    //
+}
+|   EqExp T_Equal RelExp {
+    //
+}
+|   EqExp T_NotEqual RelExp {
+    //
+}
+;
+
+LAndExp:
+    EqExp {
+    //
+}
+|   LAndExp T_And EqExp {
+    //
+}
+;
+
+LOrExp:
+    LAndExp {
+    //
+}
+|   LOrExp T_Or LAndExp {
+    //
+}
+;
+
+ConstExp:
+    AddExp {
+    //
+}
+;
 
 %%
 
