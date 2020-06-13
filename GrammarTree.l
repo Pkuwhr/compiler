@@ -1,12 +1,28 @@
+/*
+ * @Date: 2020-06-13 17:07:18
+ * @LastEditors: zyk
+ * @LastEditTime: 2020-06-13 22:56:13
+ * @FilePath: \compiler\GrammarTree.l
+ */ 
+
+
 %{
     #include<stdio.h>
     #include<stdlib.h>
     #include"GrammarTree.h"
     #include"GrammarTree.tab.h"
 
-    int two_tuples_trigger = 1;  // the trigger controling wether display two-tuples of lexical analyzing
+    // 用于打印词法分析结果
+    #define PRINT_TUPLE(...) if(tuple_trigger) printf(__VA_ARGS__);
+    // 用于打印词法分析阶段报错信息
+    #define DEBUG(...) printf(__VA_ARGS__);
+
+    // TODO: 将其改为可通过命令行参数配置
+    int tuple_trigger = 1;  // =1时打印词法分析结果（二元组形式）
 
     int yycolumn = 1;
+
+    // 每个动作前执行的公有动作，用于维护token的位置信息
     #define YY_USER_ACTION \
       yylloc.first_line = yylloc.last_line = yylineno; \
       yylloc.first_column = yycolumn; \
@@ -15,387 +31,196 @@
 
 %}
 
+/* 处理多行注释。具体用法请自行了解start condition特性 */
+%x COMMENT
+
+/* FIXME: 行号不能更新 */
 %option yylineno
 %option noyywrap
 
-SPSEMICOLON     ";"
-SPCOMMA         ","
-SPDOT           "."
-SPLEFTBRACE     "{"
-SPRIGHTBRACE    "}"
-OPLEFTPRNT      "("
-OPRIGHTPRNT     ")"
-OPLEFTBRACKET   "["
-OPRIGHTBRACKET  "]"
-OPPLUS          "+"
-OPMINUS         "-"
-OPMULTIPLY      "*"
-OPDIVIDE        "/"
-OPASSIGN        "="
-OPAND           "&&"
-OPOR            "||"
-OPNOT           "!"
-OPEQUAL         "=="
-OPNOTEQUAL      "!="
-OPGREAT         ">"
-OPLIGHT         "<"
-OPGREATEQ       ">="
-OPLIGHTEQ       "<="
-TYPEVOID        "void"
-TYPEINTEGER     "int"
-TYPEFLOAT       "float"
-TYPEBOOL        "bool"
-TYPESTRING      "string"
-KEYCLASS        "class"
-KEYNEW          "new"
-KEYEXTENDS      "extends"
-KEYTHIS         "this"
-KEYINSTANCEOF   "instanceof"
-KEYIF           "if"
-KEYELSE         "else"
-KEYFOR          "for"
-KEYWHILE        "while"
-KEYBREAK        "break"
-KEYRETURN       "return"
-KEYSTATIC       "static"
-KEYPRINT        "Print"
-KEYREADINTEGER  "ReadInteger"
-KEYREADLINE     "ReadLine"
-CONSTANTNULL    "null"
-CONSTANTBOOL    "true"|"false"
-CONSTANTFLOAT   [+-]?([0-9]*\.?[0-9]+|[0-9]+\.)
-CONSTANTFLOATSC [+-]?[0-9]+\.?[0-9]*([eE]{CONSTANTINTD})?
-CONSTANTINTD    [+-]?[0-9]+
-CONSTANTINTH    [+-]?0[xX][0-9a-fA-F]+
-CONSTANTSTRING  \"[^\"\n]*\"
-IDENTIFIER      [a-zA-Z][a-zA-Z0-9_]* 
-COMMENT         (\/\/.*)|(\/\*((\*[^\/]?)|[^\*]*)*\*\/)
-SPACE           " "|\t
-EOL             \n
-WRONGSTRING     \"[^\"\n]*$
-WRONGIDENTIFIER [0-9_][a-zA-Z0-9_]* 
-AERROR          .
+DIGIT             ([0-9])
+OCT_DIGIT         ([0-7])
+HEX_DIGIT         ([0-9a-fA-F])
+
+HEX_INTEGER       (0[Xx]{HEX_DIGIT}+)
+OCT_INTEGER       (0{OCT_DIGIT}*)
+INTEGER           ([1-9]{DIGIT}*)
+
+BEG_STRING        (\"[^"\n]*)
+STRING            ({BEG_STRING}\")
+
+IDENTIFIER        ([a-zA-Z][a-zA-Z_0-9]*)
+
+OPERATOR          ([-+/*%=,;!<>()[\]{}])
+
+BEG_COMMENTENT       ("/*")
+END_COMMENTENT       ("*/")
+SINGLE_COMMENTENT    ("//"[^\n]*)
+
+SPACE               " "|\t
 
 %%
-{SPSEMICOLON} { 
-    if (two_tuples_trigger)
-        printf("(%s, SPSEMICOLON)\n", yytext); 
-    yylval.grammar_tree = CreateGrammarTree("SPSEMICOLON", 0, yylineno);
-    return SPSEMICOLON;
+
+ /* -------------------- Comments ----------------------------- */
+{BEG_COMMENTENT}            {
+    BEGIN(COMMENT);
+    PRINT_TUPLE("Comments detected...\n")
 }
-{SPCOMMA} { 
-    if (two_tuples_trigger)
-        printf("(%s, SPCOMMA)\n", yytext); 
-    yylval.grammar_tree = CreateGrammarTree("SPCOMMA", 0, yylineno);
-    return SPCOMMA;
+<COMMENT>{END_COMMENTENT}   {
+    BEGIN(INITIAL);
 }
-{SPDOT} { 
-    if (two_tuples_trigger)
-        printf("(%s, SPDOT)\n", yytext); 
-    yylval.grammar_tree = CreateGrammarTree("SPDOT", 0, yylineno);
-    return SPDOT;
+<COMMENT><<EOF>>            {
+    DEBUG("Invalid comments\n")
+    return 0;
 }
-{SPLEFTBRACE} { 
-    if (two_tuples_trigger)
-        printf("(%s, SPLEFTBRACE)\n", yytext); 
-    yylval.grammar_tree = CreateGrammarTree("SPLEFTBRACE", 0, yylineno);
-    return SPLEFTBRACE;
+<COMMENT>'\n'               {
+    yycolumn = 1;
 }
-{SPRIGHTBRACE} { 
-    if (two_tuples_trigger)
-        printf("(%s, SPRIGHTBRACE)\n", yytext); 
-    yylval.grammar_tree = CreateGrammarTree("SPRIGHTBRACE", 0, yylineno);
-    return SPRIGHTBRACE;
+<COMMENT>.                  {
+    /* ignore everything else that doesn't match */
 }
-{OPLEFTPRNT} { 
-    if (two_tuples_trigger)
-        printf("(%s, OPLEFTPRNT)\n", yytext); 
-    yylval.grammar_tree = CreateGrammarTree("OPLEFTPRNT", 0, yylineno);
-    return OPLEFTPRNT;
+{SINGLE_COMMENTENT}         {
+    yycolumn = 1;
+    /* skip to end of line for // comment */
 }
-{OPRIGHTPRNT} { 
-    if (two_tuples_trigger)
-        printf("(%s, OPRIGHTPRNT)\n", yytext); 
-    yylval.grammar_tree = CreateGrammarTree("OPRIGHTPRNT", 0, yylineno);
-    return OPRIGHTPRNT;
+
+
+ /* --------------------- Keywords ------------------------------- */
+"void"      {
+    PRINT_TUPLE("(%s, T_Void)\n", yytext)
+    yylval.grammar_tree = CreateGrammarTree(T_Void, 0, yylineno);
+    return T_Void;
 }
-{OPLEFTBRACKET} { 
-    if (two_tuples_trigger)
-        printf("(%s, OPLEFTBRACKET)\n", yytext);
-    yylval.grammar_tree = CreateGrammarTree("OPLEFTBRACKET", 0, yylineno);
-    return OPLEFTBRACKET;
+"int"       {
+    PRINT_TUPLE("(%s, T_Int)\n", yytext)
+    yylval.grammar_tree = CreateGrammarTree(T_Int, 0, yylineno);
+    return T_Int;
 }
-{OPRIGHTBRACKET} { 
-    if (two_tuples_trigger)
-        printf("(%s, OPRIGHTBRACKET)\n", yytext);
-    yylval.grammar_tree = CreateGrammarTree("OPRIGHTBRACKET", 0, yylineno);
-    return OPRIGHTBRACKET;
+"const"     {
+    PRINT_TUPLE("(%s, T_Const)\n", yytext)
+    yylval.grammar_tree = CreateGrammarTree(T_Const, 0, yylineno);
+    return T_Const;
 }
-{OPPLUS} { 
-    if (two_tuples_trigger)
-        printf("(%s, OPPLUS)\n", yytext);
-    yylval.grammar_tree = CreateGrammarTree("OPPLUS", 0, yylineno);
-    return OPPLUS;
+"while"     {
+    PRINT_TUPLE("(%s, T_While)\n", yytext)
+    yylval.grammar_tree = CreateGrammarTree(T_While, 0, yylineno);
+    return T_While;
 }
-{OPMINUS} { 
-    if (two_tuples_trigger)
-        printf("(%s, OPMINUS)\n", yytext); 
-    yylval.grammar_tree = CreateGrammarTree("OPMINUS", 0, yylineno);
-    return OPMINUS;
+"if"        {
+    PRINT_TUPLE("(%s, T_If)\n", yytext)
+    yylval.grammar_tree = CreateGrammarTree(T_If, 0, yylineno);
+    return T_If;
 }
-{OPMULTIPLY} { 
-    if (two_tuples_trigger)
-        printf("(%s, OPMULTIPLY)\n", yytext); 
-    yylval.grammar_tree = CreateGrammarTree("OPMULTIPLY", 0, yylineno);
-    return OPMULTIPLY;
+"else"      {
+    PRINT_TUPLE("(%s, T_Else)\n", yytext)
+    yylval.grammar_tree = CreateGrammarTree(T_Else, 0, yylineno);
+    return T_Else;
 }
-{OPDIVIDE} { 
-    if (two_tuples_trigger)
-        printf("(%s, OPDIVIDE)\n", yytext); 
-    yylval.grammar_tree = CreateGrammarTree("OPDIVIDE", 0, yylineno);
-    return OPDIVIDE;
+"return"    {
+    PRINT_TUPLE("(%s, T_Return)\n", yytext)
+    yylval.grammar_tree = CreateGrammarTree(T_Return, 0, yylineno);
+    return T_Return;
 }
-{OPASSIGN} { 
-    if (two_tuples_trigger)
-        printf("(%s, OPASSIGN)\n", yytext);
-    yylval.grammar_tree = CreateGrammarTree("OPASSIGN", 0, yylineno);
-    return OPASSIGN;
+"break"     {
+    PRINT_TUPLE("(%s, T_Break)\n", yytext)
+    yylval.grammar_tree = CreateGrammarTree(T_Break, 0, yylineno);
+    return T_Break;
 }
-{OPAND} { 
-    if (two_tuples_trigger)
-        printf("(%s, OPAND)\n", yytext); 
-    yylval.grammar_tree = CreateGrammarTree("OPAND", 0, yylineno);
-    return OPAND;
+"continue"  {
+    PRINT_TUPLE("(%s, T_Continue)\n", yytext)
+    yylval.grammar_tree = CreateGrammarTree(T_Continue, 0, yylineno);
+    return T_Continue;
 }
-{OPOR} { 
-    if (two_tuples_trigger)
-        printf("(%s, OPOR)\n", yytext); 
-    yylval.grammar_tree = CreateGrammarTree("OPOR", 0, yylineno);
-    return OPOR;
+
+
+ /* -------------------- Operators ----------------------------- */
+"<=" {
+    PRINT_TUPLE("(%s, T_LessEqual)\n", yytext)
+    yylval.grammar_tree = CreateGrammarTree(T_LessEqual, 0, yylineno);
+    return T_LessEqual;
 }
-{OPNOT} { 
-    if (two_tuples_trigger)
-        printf("(%s, OPNOT)\n", yytext); 
-    yylval.grammar_tree = CreateGrammarTree("OPNOT", 0, yylineno);
-    return OPNOT;
+">=" {
+    PRINT_TUPLE("(%s, T_GreaterEqual)\n", yytext)
+    yylval.grammar_tree = CreateGrammarTree(T_GreaterEqual, 0, yylineno);
+    return T_LessEqual;
 }
-{OPEQUAL} { 
-    if (two_tuples_trigger)
-        printf("(%s, OPEQUAL)\n", yytext);
-    yylval.grammar_tree = CreateGrammarTree("OPEQUAL", 0, yylineno);
-    return OPEQUAL;
+"==" {
+    PRINT_TUPLE("(%s, T_Equal)\n", yytext)
+    yylval.grammar_tree = CreateGrammarTree(T_Equal, 0, yylineno);
+    return T_Equal;
 }
-{OPNOTEQUAL} { 
-    if (two_tuples_trigger)
-        printf("(%s, OPNOTEQUAL)\n", yytext);
-    yylval.grammar_tree = CreateGrammarTree("OPNOTEQUAL", 0, yylineno);
-    return OPNOTEQUAL;
+"!=" {
+    PRINT_TUPLE("(%s, T_NotEqual)\n", yytext)
+    yylval.grammar_tree = CreateGrammarTree(T_NotEqual, 0, yylineno);
+    return T_Equal;
 }
-{OPGREAT} { 
-    if (two_tuples_trigger)
-        printf("(%s, OPGREAT)\n", yytext);
-    yylval.grammar_tree = CreateGrammarTree("OPGREAT", 0, yylineno);
-    return OPGREAT;
+"&&" {
+    PRINT_TUPLE("(%s, T_And)\n", yytext)
+    yylval.grammar_tree = CreateGrammarTree(T_And, 0, yylineno);
+    return T_And;
 }
-{OPLIGHT} { 
-    if (two_tuples_trigger)
-        printf("(%s, OPLIGHT)\n", yytext);
-    yylval.grammar_tree = CreateGrammarTree("OPLIGHT", 0, yylineno);
-    return OPLIGHT;
+"||" {
+    PRINT_TUPLE("(%s, T_Or)\n", yytext)
+    yylval.grammar_tree = CreateGrammarTree(T_Or, 0, yylineno);
+    return T_Or;
 }
-{OPGREATEQ} { 
-    if (two_tuples_trigger)
-        printf("(%s, OPGREATEQ)\n", yytext);
-    yylval.grammar_tree = CreateGrammarTree("OPGREATEQ", 0, yylineno);
-    return OPGREATEQ;
+"[]" {
+    PRINT_TUPLE("(%s, T_Dims)\n", yytext)
+    yylval.grammar_tree = CreateGrammarTree(T_Dims, 0, yylineno);
+    return T_Dims;
 }
-{OPLIGHTEQ} { 
-    if (two_tuples_trigger)
-        printf("(%s, OPLIGHTEQ)\n", yytext);
-    yylval.grammar_tree = CreateGrammarTree("OPLIGHTEQ", 0, yylineno);
-    return OPLIGHTEQ;
+{OPERATOR} {
+    PRINT_TUPLE("(%s, T_Operator)\n", yytext)
+    yylval.grammar_tree = CreateGrammarTree(yytext[0], 0, yylineno);
+    return yytext[0];
 }
-{TYPEVOID} { 
-    if (two_tuples_trigger)
-        printf("(%s, TYPEVOID)\n", yytext);
-    yylval.grammar_tree = CreateGrammarTree("TYPEVOID", 0, yylineno);
-    return TYPEVOID;
+
+
+ /* -------------------- Constants ------------------------------ */
+ /* FIXME: 这段代码老是有warning */
+{INTEGER}       {
+    PRINT_TUPLE("(\"%s\" = %d, T_IntConstant)\n", yytext, strtol(yytext, NULL, 10))
+    yylval.grammar_tree = CreateGrammarTree(T_IntConstant, 0, yylineno);
+    return T_IntConstant;
 }
-{TYPEINTEGER} { 
-    if (two_tuples_trigger)
-        printf("(%s, TYPEINTEGER)\n", yytext);
-    yylval.grammar_tree = CreateGrammarTree("TYPEINTEGER", 0, yylineno);
-    return TYPEINTEGER;
+{OCT_INTEGER}   {
+    PRINT_TUPLE("(\"%s\" = %d, T_IntConstant)\n", yytext, strtol(yytext, NULL, 8))
+    yylval.grammar_tree = CreateGrammarTree(T_IntConstant, 0, yylineno);
+    return T_IntConstant;
 }
-{TYPEFLOAT} { 
-    if (two_tuples_trigger)
-        printf("(%s, TYPEFLOAT)\n", yytext);
-    yylval.grammar_tree = CreateGrammarTree("TYPEFLOAT", 0, yylineno);
-    return TYPEFLOAT;
+{HEX_INTEGER}   {
+    PRINT_TUPLE("(\"%s\" = %d, T_IntConstant)\n", yytext, strtol(yytext, NULL, 16))
+    yylval.grammar_tree = CreateGrammarTree(T_IntConstant, 0, yylineno);
+    return T_IntConstant;
+}                      
+{STRING}        {
+    PRINT_TUPLE("(%s, T_StringConstant)\n", yytext)
+    yylval.grammar_tree = CreateGrammarTree(T_StringConstant, 0, yylineno);
+    return T_StringConstant;
 }
-{TYPEBOOL} { 
-    if (two_tuples_trigger)
-        printf("(%s, TYPEBOOL)\n", yytext);
-    yylval.grammar_tree = CreateGrammarTree("TYPEBOOL", 0, yylineno);
-    return TYPEBOOL;
+{BEG_STRING}    {
+    DEBUG("invalid string")
 }
-{TYPESTRING} { 
-    if (two_tuples_trigger)
-        printf("(%s, TYPESTRING)\n", yytext);
-    yylval.grammar_tree = CreateGrammarTree("TYPESTRING", 0, yylineno);
-    return TYPESTRING;
+
+
+ /* -------------------- Identifiers --------------------------- */
+{IDENTIFIER}    {
+    PRINT_TUPLE("(%s, T_Identifier)\n", yytext)
+    yylval.grammar_tree = CreateGrammarTree(T_Identifier, 0, yylineno);
+    return T_Identifier;
 }
-{KEYCLASS} { 
-    if (two_tuples_trigger)
-        printf("(%s, KEYCLASS)\n", yytext);
-    yylval.grammar_tree = CreateGrammarTree("KEYCLASS", 0, yylineno);
-    return KEYCLASS;
+
+
+ /* -------------------- Default rule (error) -------------------- */
+{SPACE} {
+    /* ignore */
 }
-{KEYNEW} { 
-    if (two_tuples_trigger)
-        printf("(%s, KEYNEW)\n", yytext);
-    yylval.grammar_tree = CreateGrammarTree("KEYNEW", 0, yylineno);
-    return KEYNEW;
+'\n' {
+    yycolumn = 1;
 }
-{KEYEXTENDS} { 
-    if (two_tuples_trigger)
-        printf("(%s, KEYEXTENDS)\n", yytext);
-    yylval.grammar_tree = CreateGrammarTree("KEYEXTENDS", 0, yylineno);
-    return KEYEXTENDS;
+. {
+    DEBUG("Error type A at Line %d column %d: Mysterious characters \"%s\".\n",
+          yylineno, yylloc.first_column, yytext)
 }
-{KEYTHIS} { 
-    if (two_tuples_trigger)
-        printf("(%s, KEYTHIS)\n", yytext);
-    yylval.grammar_tree = CreateGrammarTree("KEYTHIS", 0, yylineno);
-    return KEYTHIS;
-}
-{KEYINSTANCEOF} { 
-    if (two_tuples_trigger)
-        printf("(%s, KEYINSTANCEOF)\n", yytext);
-    yylval.grammar_tree = CreateGrammarTree("KEYINSTANCEOF", 0, yylineno);
-    return KEYINSTANCEOF;
-}
-{KEYIF} { 
-    if (two_tuples_trigger)
-        printf("(%s, KEYIF)\n", yytext);
-    yylval.grammar_tree = CreateGrammarTree("KEYIF", 0, yylineno);
-    return KEYIF;
-}
-{KEYELSE} { 
-    if (two_tuples_trigger)
-        printf("(%s, KEYELSE)\n", yytext);
-    yylval.grammar_tree = CreateGrammarTree("KEYELSE", 0, yylineno);
-    return KEYELSE;
-}
-{KEYFOR} { 
-    if (two_tuples_trigger)
-        printf("(%s, KEYFOR)\n", yytext);
-    yylval.grammar_tree = CreateGrammarTree("KEYFOR", 0, yylineno);
-    return KEYFOR;
-}
-{KEYWHILE} { 
-    if (two_tuples_trigger)
-        printf("(%s, KEYWHILE)\n", yytext);
-    yylval.grammar_tree = CreateGrammarTree("KEYWHILE", 0, yylineno);
-    return KEYWHILE;
-}
-{KEYBREAK} { 
-    if (two_tuples_trigger)
-        printf("(%s, KEYBREAK)\n", yytext);
-    yylval.grammar_tree = CreateGrammarTree("KEYBREAK", 0, yylineno);
-    return KEYBREAK;
-}
-{KEYRETURN} { 
-    if (two_tuples_trigger)
-        printf("(%s, KEYRETURN)\n", yytext);
-    yylval.grammar_tree = CreateGrammarTree("KEYRETURN", 0, yylineno);
-    return KEYRETURN;
-}
-{KEYSTATIC} { 
-    if (two_tuples_trigger)
-        printf("(%s, KEYSTATIC)\n", yytext);
-    yylval.grammar_tree = CreateGrammarTree("KEYSTATIC", 0, yylineno);
-    return KEYSTATIC;
-}
-{KEYPRINT} { 
-    if (two_tuples_trigger)
-        printf("(%s, KEYPRINT)\n", yytext);
-    yylval.grammar_tree = CreateGrammarTree("KEYPRINT", 0, yylineno);
-    return KEYPRINT;
-}
-{KEYREADINTEGER} { 
-    if (two_tuples_trigger)
-        printf("(%s, KEYREADINTEGER)\n", yytext);
-    yylval.grammar_tree = CreateGrammarTree("KEYREADINTEGER", 0, yylineno);
-    return KEYREADINTEGER;
-}
-{KEYREADLINE} { 
-    if (two_tuples_trigger)
-        printf("(%s, KEYREADLINE)\n", yytext);
-    yylval.grammar_tree = CreateGrammarTree("KEYREADLINE", 0, yylineno);
-    return KEYREADLINE;
-}
-{CONSTANTNULL} { 
-    if (two_tuples_trigger)
-        printf("(%s, CONSTANTNULL)\n", yytext); 
-    yylval.grammar_tree = CreateGrammarTree("CONSTANTNULL", 0, yylineno);
-    return CONSTANTNULL;
-}
-{CONSTANTBOOL} { 
-    if (two_tuples_trigger)
-        printf("(%s, CONSTANTBOOL)\n", yytext);
-    yylval.grammar_tree = CreateGrammarTree("CONSTANTBOOL", 0, yylineno);
-    return CONSTANTBOOL;
-}
-{CONSTANTINTD} { 
-    if (two_tuples_trigger)
-        printf("(%s, CONSTANTINTD)\n", yytext);
-    yylval.grammar_tree = CreateGrammarTree("CONSTANTINTD", 0, yylineno);
-    return CONSTANTINTD;
-}
-{CONSTANTINTH} { 
-    if (two_tuples_trigger)
-        printf("(%s, CONSTANTINTH)\n", yytext);
-    yylval.grammar_tree = CreateGrammarTree("CONSTANTINTH", 0, yylineno);
-    return CONSTANTINTH;
-}
-{CONSTANTFLOAT} { 
-    if (two_tuples_trigger)
-        printf("(%s, CONSTANTFLOAT)\n", yytext);
-    yylval.grammar_tree = CreateGrammarTree("CONSTANTFLOAT", 0, yylineno);
-    return CONSTANTFLOAT;
-}
-{CONSTANTFLOATSC} { 
-    if (two_tuples_trigger)
-        printf("(%s, CONSTANTFLOATSC)\n", yytext);
-    yylval.grammar_tree = CreateGrammarTree("CONSTANTFLOATSC", 0, yylineno);
-    return CONSTANTFLOATSC;
-}
-{CONSTANTSTRING} { 
-    if (two_tuples_trigger)
-        printf("(%s, CONSTANTSTRING)\n", yytext);
-    yylval.grammar_tree = CreateGrammarTree("CONSTANTSTRING", 0, yylineno);
-    return CONSTANTSTRING;
-}
-{IDENTIFIER} { 
-    if (two_tuples_trigger)
-        printf("(%s, IDENTIFIER)\n", yytext);
-    yylval.grammar_tree = CreateGrammarTree("IDENTIFIER", 0, yylineno);
-    return IDENTIFIER;
-}
-{COMMENT} { if (two_tuples_trigger) printf("(%s, COMMENT)\n", yytext); }
-{SPACE} { /*if (two_tuples_trigger) printf("(%s, SPACE)\n", yytext);*/ }
-{EOL} { if (two_tuples_trigger) printf("(\\n, EOL)\n"); yycolumn = 1; }
-{WRONGSTRING} {
-    printf("Error type A at Line %d column %d: Missing \"\"\".\n", yylineno, yylloc.last_column); 
-    exit(-1);
-}
-{WRONGIDENTIFIER} {
-    printf("Error type A at Line %d column %d: Wrong format of identifier.\n", yylineno, yylloc.first_column); 
-    exit(-1);
-}
-{AERROR} { 
-    printf("Error type A at Line %d column %d: Mysterious characters \"%s\".\n", yylineno, yylloc.first_column, yytext); 
-    exit(-1); 
-}
+
 %%

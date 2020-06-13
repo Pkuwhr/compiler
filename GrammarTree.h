@@ -1,9 +1,9 @@
-/*************************************************************************
-    > File Name: GrammarTree.h
-    > Author: GuanyuLi
-    > Mail: guanyuli@hustunique.com
-    > Created Time: Mon 21 Nov 2016 11:41:37 PM CST
- ************************************************************************/
+/*
+ * @Date: 2020-06-13 17:07:18
+ * @LastEditors: zyk
+ * @LastEditTime: 2020-06-13 22:32:06
+ * @FilePath: \compiler\GrammarTree.h
+ */ 
 
 #ifndef _GRAMMARTREE_H
 #define _GRAMMARTREE_H
@@ -26,14 +26,13 @@ extern int yyparse();
 typedef struct GrammarTreeNode
 {
     int line;       // the number of its line
-    char* name;     // the name of this grammar unit
-    struct GrammarTreeNode* lchild;
-    struct GrammarTreeNode* rchild;
+    int type;       // bison自动生成的枚举常量，标记终结符/非终结符类型
+    struct GrammarTreeNode* lchild;     // lchild指向孩子节点
+    struct GrammarTreeNode* rchild;     // rchild指向兄弟节点
     union           // the value of this grammar unit
     {
         char* string_value;
         int int_value;
-        float float_value;
     };
 } GrammarTreeNode;
 
@@ -43,7 +42,7 @@ typedef struct GrammarTreeNode* GrammarTree;
  * name: the name of the grammar unit
  * num: the number of grammar unit in the varible parameter list
 */
-GrammarTree CreateGrammarTree(char* name, int num, ...);
+GrammarTree CreateGrammarTree(int type, int num, ...);
 
 /* Traverse GrammarTree Using Pre-Order
  * tree: the grammar tree
