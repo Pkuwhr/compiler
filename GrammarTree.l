@@ -215,7 +215,7 @@ SPACE               " "|\t
 {SPACE} {
     /* ignore */
 }
-'\n' {
+\n {
     yycolumn = 1;
 }
 . {
