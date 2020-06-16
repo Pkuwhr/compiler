@@ -1,1 +1,0 @@
-/usr/bin/cc -g   CMakeFiles/compiler.dir/lex.yy.c.o CMakeFiles/compiler.dir/y.tab.c.o CMakeFiles/compiler.dir/GrammarTree.c.o CMakeFiles/compiler.dir/Nonterminals.c.o  -o compiler 
