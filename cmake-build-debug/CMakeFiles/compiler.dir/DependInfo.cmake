@@ -4,10 +4,10 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_C
-  "E:/compiler/GrammarTree.c" "E:/compiler/cmake-build-debug/CMakeFiles/compiler.dir/GrammarTree.c.obj"
-  "E:/compiler/Nonterminals.c" "E:/compiler/cmake-build-debug/CMakeFiles/compiler.dir/Nonterminals.c.obj"
-  "E:/compiler/lex.yy.c" "E:/compiler/cmake-build-debug/CMakeFiles/compiler.dir/lex.yy.c.obj"
-  "E:/compiler/y.tab.c" "E:/compiler/cmake-build-debug/CMakeFiles/compiler.dir/y.tab.c.obj"
+  "/home/zyk/CLionProjects/compiler/GrammarTree.c" "/home/zyk/CLionProjects/compiler/cmake-build-debug/CMakeFiles/compiler.dir/GrammarTree.c.o"
+  "/home/zyk/CLionProjects/compiler/Nonterminals.c" "/home/zyk/CLionProjects/compiler/cmake-build-debug/CMakeFiles/compiler.dir/Nonterminals.c.o"
+  "/home/zyk/CLionProjects/compiler/lex.yy.c" "/home/zyk/CLionProjects/compiler/cmake-build-debug/CMakeFiles/compiler.dir/lex.yy.c.o"
+  "/home/zyk/CLionProjects/compiler/y.tab.c" "/home/zyk/CLionProjects/compiler/cmake-build-debug/CMakeFiles/compiler.dir/y.tab.c.o"
   )
 set(CMAKE_C_COMPILER_ID "GNU")
 

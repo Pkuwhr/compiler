@@ -1,0 +1,8 @@
+cmake-build-debug/
+.idea/
+
+*.o
+*.output
+y.tab.*
+lex.yy.*
+compiler
