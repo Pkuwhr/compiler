@@ -1,3 +1,9 @@
+<!--
+ * @Date: 2020-06-13 23:28:40
+ * @LastEditors: zyk
+ * @LastEditTime: 2020-06-15 21:09:24
+ * @FilePath: \compiler\doc\SysY文法.md
+--> 
 # SysY文法
 
 原文档《[SysY语言定义](https://gitlab.eduxiji.net/nscscc/docs/-/blob/master/SysY语言定义.pdf)》中采用EBNF范式表示，为了使用Bison自动生成语法分析器，需要将其修改为基本的上下文无关文法表示法。
@@ -11,7 +17,7 @@
 | 基本类型         | `BType`            | `'int'`<br />`void`                                          |
 | 常数定义         | `ConstDef`         | `Ident '=' ConstInitVal`<br />`Ident ConstArraySubSeq '=' ConstInitVal` |
 | 数组常量下标列表 | `ConstArraySubSeq` | `'[' ConstExp ']'`<br />`ConstArraySubSeq '[' ConstExp ']'`  |
-| 数组下标列表     | `ArraySubSeq`      | `'[' Exp ']'`<br />`ArraySubSeq '[' Exp ']'`                 |
+| 数组下标列表     | `ArraySubSeq`      | `epsilon`<br />`ArraySubSeq '[' Exp ']'`                 |
 | 常量初值         | `ConstInitVal`     | `ConstExp`<br />`'{' ConstInitValSeq '}'`<br />`'{' '}'`     |
 | 常量初值列表     | `ConstInitValSeq`  | `ConstInitVal`<br />`ConstInitValSeq ',' ConstInitVal`       |
 | 变量声明         | `VarDecl`          | `BType VarDefSeq ';'`                                        |

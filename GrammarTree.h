@@ -1,9 +1,9 @@
 /*
  * @Date: 2020-06-13 17:07:18
  * @LastEditors: zyk
- * @LastEditTime: 2020-06-13 22:32:06
+ * @LastEditTime: 2020-06-15 19:21:38
  * @FilePath: \compiler\GrammarTree.h
- */ 
+ */
 
 #ifndef _GRAMMARTREE_H
 #define _GRAMMARTREE_H
@@ -18,25 +18,25 @@
 
 int gmerror;            // the errors in grammar analyzing
 
-extern char* yytext;
-extern FILE* yyin;
+extern char *yytext;
+extern FILE *yyin;
 extern int yylineno;
+
 extern int yyparse();
 
-typedef struct GrammarTreeNode
-{
+typedef struct GrammarTreeNode {
     int line;       // the number of its line
     int type;       // bison自动生成的枚举常量，标记终结符/非终结符类型
-    struct GrammarTreeNode* lchild;     // lchild指向孩子节点
-    struct GrammarTreeNode* rchild;     // rchild指向兄弟节点
+    struct GrammarTreeNode *lchild;     // lchild指向孩子节点
+    struct GrammarTreeNode *rchild;     // rchild指向兄弟节点
     union           // the value of this grammar unit
     {
-        char* string_value;
+        char *string_value;
         int int_value;
     };
 } GrammarTreeNode;
 
-typedef struct GrammarTreeNode* GrammarTree;
+typedef struct GrammarTreeNode *GrammarTree;
 
 /* Create GrammarTree Using Chile-Brother representation
  * name: the name of the grammar unit
@@ -48,6 +48,6 @@ GrammarTree CreateGrammarTree(int type, int num, ...);
  * tree: the grammar tree
  * level: the number of the level
  */
-void TraverseGrammerTree(GrammarTree gmtree, int level);
+void TraverseGrammarTree(GrammarTree gmtree, int level);
 
 #endif

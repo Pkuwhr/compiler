@@ -1,0 +1,36 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+E:/compiler/GrammarTree.c
+GrammarTree.h
+E:/compiler/GrammarTree.h
+Nonterminals.h
+E:/compiler/Nonterminals.h
+y.tab.h
+E:/compiler/y.tab.h
+
+E:/compiler/GrammarTree.h
+stdio.h
+-
+stdlib.h
+-
+stdarg.h
+-
+string.h
+-
+
+E:/compiler/Nonterminals.c
+Nonterminals.h
+E:/compiler/Nonterminals.h
+GrammarTree.h
+E:/compiler/GrammarTree.h
+y.tab.h
+E:/compiler/y.tab.h
+
+E:/compiler/Nonterminals.h
+

@@ -1,8 +1,8 @@
 /*
  * @Date: 2020-06-13 17:07:18
  * @LastEditors: zyk
- * @LastEditTime: 2020-06-13 22:56:13
- * @FilePath: \compiler\GrammarTree.l
+ * @LastEditTime: 2020-06-15 21:06:30
+ * @FilePath: \compiler\scanner.l
  */ 
 
 
@@ -10,7 +10,7 @@
     #include<stdio.h>
     #include<stdlib.h>
     #include"GrammarTree.h"
-    #include"GrammarTree.tab.h"
+    #include"y.tab.h"
 
     // 用于打印词法分析结果
     #define PRINT_TUPLE(...) if(tuple_trigger) printf(__VA_ARGS__);
@@ -34,7 +34,6 @@
 /* 处理多行注释。具体用法请自行了解start condition特性 */
 %x COMMENT
 
-/* FIXME: 行号不能更新 */
 %option yylineno
 %option noyywrap
 
@@ -164,32 +163,27 @@ SPACE               " "|\t
     yylval.grammar_tree = CreateGrammarTree(T_Or, 0, yylineno);
     return T_Or;
 }
-"[]" {
-    PRINT_TUPLE("(%s, T_Dims)\n", yytext)
-    yylval.grammar_tree = CreateGrammarTree(T_Dims, 0, yylineno);
-    return T_Dims;
-}
 {OPERATOR} {
     PRINT_TUPLE("(%s, T_Operator)\n", yytext)
+    /* 一个字符的运算符使用其ASCII码对应的整数表示 */
     yylval.grammar_tree = CreateGrammarTree(yytext[0], 0, yylineno);
     return yytext[0];
 }
 
 
  /* -------------------- Constants ------------------------------ */
- /* FIXME: 这段代码老是有warning */
 {INTEGER}       {
-    PRINT_TUPLE("(\"%s\" = %d, T_IntConstant)\n", yytext, strtol(yytext, NULL, 10))
+    PRINT_TUPLE("(\"%s\" = %d, T_IntConstant)\n", yytext, (int) strtol(yytext, NULL, 10))
     yylval.grammar_tree = CreateGrammarTree(T_IntConstant, 0, yylineno);
     return T_IntConstant;
 }
 {OCT_INTEGER}   {
-    PRINT_TUPLE("(\"%s\" = %d, T_IntConstant)\n", yytext, strtol(yytext, NULL, 8))
+    PRINT_TUPLE("(\"%s\" = %d, T_IntConstant)\n", yytext, (int) strtol(yytext, NULL, 8))
     yylval.grammar_tree = CreateGrammarTree(T_IntConstant, 0, yylineno);
     return T_IntConstant;
 }
 {HEX_INTEGER}   {
-    PRINT_TUPLE("(\"%s\" = %d, T_IntConstant)\n", yytext, strtol(yytext, NULL, 16))
+    PRINT_TUPLE("(\"%s\" = %d, T_IntConstant)\n", yytext, (int) strtol(yytext, NULL, 16))
     yylval.grammar_tree = CreateGrammarTree(T_IntConstant, 0, yylineno);
     return T_IntConstant;
 }                      
@@ -215,8 +209,11 @@ SPACE               " "|\t
 {SPACE} {
     /* ignore */
 }
-'\n' {
+\n {
     yycolumn = 1;
+}
+\r {
+    /* Maintain compatibility for CRLF file. */
 }
 . {
     DEBUG("Error type A at Line %d column %d: Mysterious characters \"%s\".\n",
