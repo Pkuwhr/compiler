@@ -29,10 +29,10 @@ GrammarTree CreateGrammarTree(int type, int num, ...) {
             tmp->rchild = va_arg(variables, GrammarTree);
             tmp = tmp->rchild; // 可以视为将指针移动到链表尾
         }
+        tmp->rchild = NULL; // make sure the end flag is set correctly
         // Modify the line number when reduce using rule "Stmt->SimpleStmt" and SimpleStmt is Epsilon
-        // FIXME: 这是什么意思？
-        // if (!strcmp(current->lchild->name, "SimpleStmt") && current->lchild->line == -1)
-        //     current->line = current->lchild->rchild->line;
+         if ((current->lchild->type == ConstInitVal || current->lchild->type == Block) && current->lchild->line == -1)
+             current->line = current->lchild->rchild->line;
     } else {   // 处理终结符或空规则
         current->line = va_arg(variables,
         int); // 行号
@@ -40,13 +40,8 @@ GrammarTree CreateGrammarTree(int type, int num, ...) {
         switch (current->type) // 此变量正是bison中定义的token和type
         {
             case T_Identifier:
-                // 将标识符名称放入string_value
-                value_buffer = (char *) malloc(sizeof(char) * strlen(yytext));
-                strcpy(value_buffer, yytext);
-                current->string_value = value_buffer;
-                break;
             case T_StringConstant:
-                // 将字符串常量放入string_value
+                // 将标识符名称放入string_value
                 value_buffer = (char *) malloc(sizeof(char) * strlen(yytext));
                 strcpy(value_buffer, yytext);
                 current->string_value = value_buffer;
@@ -54,11 +49,11 @@ GrammarTree CreateGrammarTree(int type, int num, ...) {
             case T_IntConstant:
                 // 计算不同进制的常量值
                 if (yytext[0] == '0' && (yytext[1] == 'x' || yytext[1] == 'X')) {
-                    current->int_value = strtol(yytext, NULL, 16);
+                    current->int_value = (int) strtol(yytext, NULL, 16);
                 } else if (yytext[0] == '0') {
-                    current->int_value = strtol(yytext, NULL, 8);
+                    current->int_value = (int) strtol(yytext, NULL, 8);
                 } else {
-                    current->int_value = strtol(yytext, NULL, 10);
+                    current->int_value = (int) strtol(yytext, NULL, 10);
                 }
                 break;
             default:
@@ -69,16 +64,13 @@ GrammarTree CreateGrammarTree(int type, int num, ...) {
 }
 
 void TraverseGrammarTree(GrammarTree gmtree, int level) {
-    // TODO: 重写这个函数
     if (gmtree != NULL) {
         for (int i = 0; i < level; i++)
             printf("    ");
         if (gmtree->line != -1) {
             // Not void rule
             printf("%s", NameOf(gmtree->type));
-            if (gmtree->type == T_Identifier)
-                printf(": %s\n", gmtree->string_value);
-            else if (gmtree->type == T_StringConstant)
+            if (gmtree->type == T_Identifier || gmtree->type == T_StringConstant)
                 printf(": %s\n", gmtree->string_value);
             else if (gmtree->type == T_IntConstant)
                 printf(": %d\n", gmtree->int_value);

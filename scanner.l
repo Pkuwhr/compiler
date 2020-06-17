@@ -1,8 +1,8 @@
 /*
  * @Date: 2020-06-13 17:07:18
  * @LastEditors: zyk
- * @LastEditTime: 2020-06-15 21:06:30
- * @FilePath: \compiler\scanner.l
+ * @LastEditTime: 2020-06-17 00:54:49
+ * @FilePath: /compiler/scanner.l
  */ 
 
 
@@ -52,20 +52,20 @@ IDENTIFIER        ([a-zA-Z][a-zA-Z_0-9]*)
 
 OPERATOR          ([-+/*%=,;!<>()[\]{}])
 
-BEG_COMMENTENT       ("/*")
-END_COMMENTENT       ("*/")
-SINGLE_COMMENTENT    ("//"[^\n]*)
+BEG_COMMENT       ("/*")
+END_COMMENT       ("*/")
+SINGLE_COMMENT    ("//"[^\n]*)
 
 SPACE               " "|\t
 
 %%
 
  /* -------------------- Comments ----------------------------- */
-{BEG_COMMENTENT}            {
+{BEG_COMMENT}            {
     BEGIN(COMMENT);
     PRINT_TUPLE("Comments detected...\n")
 }
-<COMMENT>{END_COMMENTENT}   {
+<COMMENT>{END_COMMENT}   {
     BEGIN(INITIAL);
 }
 <COMMENT><<EOF>>            {
@@ -78,7 +78,7 @@ SPACE               " "|\t
 <COMMENT>.                  {
     /* ignore everything else that doesn't match */
 }
-{SINGLE_COMMENTENT}         {
+{SINGLE_COMMENT}         {
     yycolumn = 1;
     /* skip to end of line for // comment */
 }

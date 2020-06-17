@@ -1,8 +1,8 @@
 /*
  * @Date: 2020-06-13 17:07:18
  * @LastEditors: zyk
- * @LastEditTime: 2020-06-15 21:08:51
- * @FilePath: \compiler\parser.y
+ * @LastEditTime: 2020-06-17 11:40:53
+ * @FilePath: /compiler/parser.y
  */ 
 
 
@@ -15,7 +15,7 @@
     extern int tuple_trigger;
 %}
 
-%error-verbose
+%define parse.error verbose
 %locations
 
 %union {
@@ -37,14 +37,22 @@
 
 // 以下为非终结符集
 %type <grammar_tree> CompUnit Decl FuncDef ConstDecl BType ConstDefSeq
-%type <grammar_tree> ConstDef ConstInitVal ConstArraySubSeq ConstExp
+%type <grammar_tree> ConstDef ConstInitVal ConstArraySubSeq
 %type <grammar_tree> ArraySubSeq Exp ConstInitValSeq VarDecl VarDefSeq VarDef
 %type <grammar_tree> InitVal InitValSeq Block FuncFParams
-%type <grammar_tree> FuncFParam BlockItemSeq BlockItem Stmt LVal Cond
-%type <grammar_tree> AddExp LOrExp Number PrimaryExp UnaryOp UnaryExp
-%type <grammar_tree> FuncRParams MulExp RelExp EqExp LAndExp Program
+%type <grammar_tree> FuncFParam BlockItemSeq BlockItem Stmt LVal
+%type <grammar_tree> FuncRParams Program
 
-
+// precedence
+%right '='
+%left T_Or
+%left T_And
+%left T_Equal T_NotEqual
+%left '<' '>' T_GreaterEqual T_LessEqual
+%left '+' '-'
+%left '*' '/' '%'
+%right '!'
+%right '('
 
 %%
 Program : CompUnit {
@@ -123,17 +131,17 @@ ConstDef:
 ;
 
 ConstArraySubSeq:
-    '[' ConstExp ']' {
+    '[' Exp ']' {
     $$ = CreateGrammarTree(ConstArraySubSeq, 1, $2);
 }
-| ConstArraySubSeq '[' ConstExp ']' {
+| ConstArraySubSeq '[' Exp ']' {
     $$ = CreateGrammarTree(ConstArraySubSeq, 2, $1, $3);
 }
 ;
 
 ArraySubSeq:
      {
-    $$ = CreateGrammarTree(ArraySubSeq, 0);
+    $$ = CreateGrammarTree(ArraySubSeq, 0, -1);
 }
 | ArraySubSeq '[' Exp ']' {
     $$ = CreateGrammarTree(ArraySubSeq, 2, $1, $3);
@@ -141,14 +149,14 @@ ArraySubSeq:
 ;
 
 ConstInitVal:
-    ConstExp {
+    Exp {
     $$ = CreateGrammarTree(ConstInitVal, 1, $1);
 }
 |   '{' ConstInitValSeq '}' {
     $$ = CreateGrammarTree(ConstInitVal, 1, $2);
 }
 |   '{' '}' {
-    $$ = CreateGrammarTree(ConstInitVal, 0); // FIXME: 检查cgt如何应对空规则
+    $$ = CreateGrammarTree(ConstInitVal, 0, -1);
 }
 ;
 
@@ -238,7 +246,7 @@ FuncFParam:
 
 Block:
     '{' '}' {
-    $$ = CreateGrammarTree(Block, 0); // FIXME:
+    $$ = CreateGrammarTree(Block, 0, -1);
 }
 |   '{' BlockItemSeq '}' {
     $$ = CreateGrammarTree(Block, 1, $2);
@@ -271,18 +279,18 @@ Stmt:
     $$ = CreateGrammarTree(Stmt, 1, $1);
 }  
 |   ';' {
-    $$ = CreateGrammarTree(Stmt, 0);
+    $$ = CreateGrammarTree(Stmt, 0, -1);
 }
 |   Block {
     $$ = CreateGrammarTree(Stmt, 1, $1);
 }
-|   T_If '(' Cond ')' Stmt %prec T_NoElse {
-    $$ = CreateGrammarTree(Stmt, 3, $1, $3, 5);
+|   T_If '(' Exp ')' Stmt %prec T_NoElse {
+    $$ = CreateGrammarTree(Stmt, 3, $1, $3, $5);
 }
-|   T_If '(' Cond ')' Stmt T_Else Stmt {
+|   T_If '(' Exp ')' Stmt T_Else Stmt {
     $$ = CreateGrammarTree(Stmt, 5, $1, $3, $5, $6, $7);
 }
-|   T_While '(' Cond ')' Stmt {
+|   T_While '(' Exp ')' Stmt {
     $$ = CreateGrammarTree(Stmt, 3, $1, $3, $5);
 }
 |   T_Break ';' {
@@ -299,15 +307,73 @@ Stmt:
 }
 ;
 
+
 Exp:
-    AddExp {
+    '(' Exp ')' {
+    $$ = CreateGrammarTree(Exp, 1, $2);
+}
+|   LVal {
     $$ = CreateGrammarTree(Exp, 1, $1);
 }
-;
-
-Cond:
-    LOrExp {
-    $$ = CreateGrammarTree(Cond, 1, $1);
+|   T_StringConstant {
+    $$ = CreateGrammarTree(Exp, 1, $1);
+}
+|   T_IntConstant {
+    $$ = CreateGrammarTree(Exp, 1, $1);
+}
+|   T_Identifier '(' FuncRParams ')' {
+    $$ = CreateGrammarTree(Exp, 2, $1, $3);
+}
+|   T_Identifier '(' ')' {
+    $$ = CreateGrammarTree(Exp, 1, $1);
+}
+|   '+' Exp {
+    $$ = CreateGrammarTree(Exp, 2, $1, $2);
+}
+|   '-' Exp {
+    $$ = CreateGrammarTree(Exp, 2, $1, $2);
+}
+|   '!' Exp {
+    $$ = CreateGrammarTree(Exp, 2, $1, $2);
+}
+|   Exp '*' Exp {
+    $$ = CreateGrammarTree(Exp, 3, $1, $2, $3);
+}
+|   Exp '/' Exp {
+    $$ = CreateGrammarTree(Exp, 3, $1, $2, $3);
+}
+|   Exp '%' Exp {
+    $$ = CreateGrammarTree(Exp, 3, $1, $2, $3);
+}
+|   Exp '+' Exp {
+    $$ = CreateGrammarTree(Exp, 3, $1, $2, $3);
+}
+|   Exp '-' Exp {
+    $$ = CreateGrammarTree(Exp, 3, $1, $2, $3);
+}
+|   Exp '>' Exp {
+    $$ = CreateGrammarTree(Exp, 3, $1, $2, $3);
+}
+|   Exp '<' Exp {
+    $$ = CreateGrammarTree(Exp, 3, $1, $2, $3);
+}
+|   Exp T_LessEqual Exp {
+    $$ = CreateGrammarTree(Exp, 3, $1, $2, $3);
+}
+|   Exp T_GreaterEqual Exp {
+    $$ = CreateGrammarTree(Exp, 3, $1, $2, $3);
+}
+|   Exp T_Equal Exp {
+    $$ = CreateGrammarTree(Exp, 3, $1, $2, $3);
+}
+|   Exp T_NotEqual Exp {
+    $$ = CreateGrammarTree(Exp, 3, $1, $2, $3);
+}
+|   Exp T_And Exp {
+    $$ = CreateGrammarTree(Exp, 3, $1, $2, $3);
+}
+|   Exp T_Or Exp {
+    $$ = CreateGrammarTree(Exp, 3, $1, $2, $3);
 }
 ;
 
@@ -317,50 +383,6 @@ LVal:
 }
 ;
 
-PrimaryExp:
-    '(' Exp ')' {
-    $$ = CreateGrammarTree(PrimaryExp, 1, $2);
-}
-|   LVal {
-    $$ = CreateGrammarTree(PrimaryExp, 1, $1);
-}
-|   Number {
-    $$ = CreateGrammarTree(PrimaryExp, 1, $1);
-}
-;
-
-Number:
-    T_IntConstant {
-    $$ = CreateGrammarTree(Number, 1, $1);
-}
-;
-
-UnaryExp:
-    PrimaryExp {
-    $$ = CreateGrammarTree(UnaryExp, 1, $1);
-}
-|   T_Identifier '(' FuncRParams ')' {
-    $$ = CreateGrammarTree(UnaryExp, 2, $1, $3);
-}
-|   T_Identifier '(' ')' {
-    $$ = CreateGrammarTree(UnaryExp, 1, $1);
-}
-|   UnaryOp UnaryExp {
-    $$ = CreateGrammarTree(UnaryExp, 2, $1, $2);
-}
-;
-
-UnaryOp:
-    '+' {
-    $$ = CreateGrammarTree(UnaryOp, 1, $1);
-}
-|   '-' {
-    $$ = CreateGrammarTree(UnaryOp, 1, $1);
-}
-|   '!' {
-    $$ = CreateGrammarTree(UnaryOp, 1, $1);
-}
-;
 
 FuncRParams:
     Exp {
@@ -371,86 +393,6 @@ FuncRParams:
 }
 ;
 
-MulExp:
-    UnaryExp {
-    $$ = CreateGrammarTree(MulExp, 1, $1);
-}
-|   MulExp '*' UnaryExp {
-    $$ = CreateGrammarTree(MulExp, 3, $1, $2, $3);
-}
-|   MulExp '/' UnaryExp {
-    $$ = CreateGrammarTree(MulExp, 3, $1, $2, $3);
-}
-|   MulExp '%' UnaryExp {
-    $$ = CreateGrammarTree(MulExp, 3, $1, $2, $3);
-}
-;
-
-AddExp:
-    MulExp {
-    $$ = CreateGrammarTree(AddExp, 1, $1);
-}
-|   AddExp '+' MulExp {
-    $$ = CreateGrammarTree(AddExp, 3, $1, $2, $3);
-}
-|   AddExp '-' MulExp {
-    $$ = CreateGrammarTree(AddExp, 3, $1, $2, $3);
-}
-;
-
-RelExp:
-    AddExp {
-    $$ = CreateGrammarTree(RelExp, 1, $1);
-}
-|   RelExp '<' AddExp {
-    $$ = CreateGrammarTree(RelExp, 3, $1, $2, $3);
-}
-|   RelExp T_LessEqual AddExp {
-    $$ = CreateGrammarTree(RelExp, 3, $1, $2, $3);
-}
-|   RelExp '>' AddExp {
-    $$ = CreateGrammarTree(RelExp, 3, $1, $2, $3);
-}
-|   RelExp T_GreaterEqual AddExp {
-    $$ = CreateGrammarTree(RelExp, 3, $1, $2, $3);
-}
-;
- 
-EqExp:
-    RelExp {
-    $$ = CreateGrammarTree(EqExp, 1, $1);
-}
-|   EqExp T_Equal RelExp {
-    $$ = CreateGrammarTree(EqExp, 3, $1, $2, $3);
-}
-|   EqExp T_NotEqual RelExp {
-    $$ = CreateGrammarTree(EqExp, 3, $1, $2, $3);
-}
-;
-
-LAndExp:
-    EqExp {
-    $$ = CreateGrammarTree(LAndExp, 1, $1);
-}
-|   LAndExp T_And EqExp {
-    $$ = CreateGrammarTree(LAndExp, 3, $1, $2, $3);
-}
-;
-
-LOrExp:
-    LAndExp {
-    $$ = CreateGrammarTree(LOrExp, 1, $1);
-}
-|   LOrExp T_Or LAndExp {
-    $$ = CreateGrammarTree(LOrExp, 3, $1, $2, $3);
-}
-;
-
-ConstExp:
-    AddExp {
-    $$ = CreateGrammarTree(ConstExp, 1, $1);
-}
-;
 
 %%
 

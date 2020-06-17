@@ -1,9 +1,10 @@
 <!--
  * @Date: 2020-06-13 17:07:18
  * @LastEditors: zyk
- * @LastEditTime: 2020-06-15 20:21:00
- * @FilePath: \compiler\readme.md
---> 
+ * @LastEditTime: 2020-06-17 09:56:19
+ * @FilePath: /compiler/readme.md
+-->
+
 # 说明
 
 环境: vscode
@@ -13,6 +14,14 @@
 build方法: 快捷键"Ctrl+Shift+B"
 
 清理文件方法: mingw32-make clean
+
+-----
+
+环境：CLion
+
+首先需要执行`make`编译`.l`和`.y`文件，然后才能使用`CMake`执行和调试。
+
+<!-- TODO: 修改`CMakeLists.txt` -->
 
 ## Makefile
 
