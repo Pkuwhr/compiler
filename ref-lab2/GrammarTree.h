@@ -11,7 +11,11 @@
 #define MAXSTRING 36
 #define VOIDLINE -1
 
-int gmerror;            // the errors in grammar analyzing
+#include<stdio.h>
+#include<stdlib.h>
+#include<stdarg.h>
+#include<string.h>
+#include"SymbolTable.h"
 
 extern char* yytext;
 extern FILE* yyin;
@@ -21,6 +25,7 @@ extern int yyparse();
 typedef struct GrammarTreeNode
 {
     int line;       // the number of its line
+    int column;
     char* name;     // the name of this grammar unit
     struct GrammarTreeNode* lchild;
     struct GrammarTreeNode* rchild;
@@ -30,6 +35,14 @@ typedef struct GrammarTreeNode
         int int_value;
         float float_value;
     };
+    union
+    {
+        LocalScope localscope;
+        FormalScope formalscope;
+        ClassScope classscope;
+        GlobalScope globalscope;
+    };
+    Depictor depictor;
 } GrammarTreeNode;
 
 typedef struct GrammarTreeNode* GrammarTree;

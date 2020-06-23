@@ -5,13 +5,7 @@
 	> Created Time: Tue 22 Nov 2016 02:40:28 PM CST
  ************************************************************************/
 
-#include<stdio.h>
-#include<stdlib.h>
-#include<stdarg.h>
-#include<string.h>
 #include"GrammarTree.h"
-
-extern int two_tuples_trigger;
 
 GrammarTree CreateGrammarTree(char* name, int num, ...)
 {
@@ -21,12 +15,14 @@ GrammarTree CreateGrammarTree(char* name, int num, ...)
     GrammarTree current = (GrammarTree)malloc(sizeof(GrammarTreeNode));     //Create node for current grammar unit
     GrammarTree tmp;
     current->name = name;
+    current->globalscope = NULL;
     va_start(variables, num);           // Init the variable parameter list
     if (num > 0)
     {
         tmp = va_arg(variables, GrammarTree);
         current->lchild = tmp;
         current->line = tmp->line;      // Current grammar unit's line number is equal to its left child's
+        current->column = tmp->column;      // Current grammar unit's line number is equal to its left child's
         for (i = 0; i < num - 1; i++)
         {                               // Brothers
             tmp->rchild = va_arg(variables, GrammarTree);
@@ -39,6 +35,8 @@ GrammarTree CreateGrammarTree(char* name, int num, ...)
     else
     {   // This grammar unit is terminal or void rule
         current->line = va_arg(variables, int);
+        if (current->line != -1)
+            current->column = va_arg(variables, int);
         if (!strcmp(current->name, "IDENTIFIER"))
         {
             cache = (char *)malloc(sizeof(char) * strlen(yytext));
@@ -74,6 +72,12 @@ GrammarTree CreateGrammarTree(char* name, int num, ...)
             current->string_value = cache;
         }
         else  if (!strcmp(current->name, "CONSTANTNULL"))
+        {
+            cache = (char *)malloc(sizeof(char) * strlen(yytext));
+            strcpy(cache, yytext);
+            current->string_value = cache;
+        }
+        else  if (!strncmp(current->name, "TYPE", 4))
         {
             cache = (char *)malloc(sizeof(char) * strlen(yytext));
             strcpy(cache, yytext);
@@ -118,24 +122,4 @@ void TraverseGrammerTree(GrammarTree gmtree, int level)
         TraverseGrammerTree(gmtree->lchild, level + 1);
         TraverseGrammerTree(gmtree->rchild, level);
     }
-}
-
-int main(int argc, char** argv)
-{
-    gmerror = 0;
-    if (argc > 1)
-    {
-        if (!(yyin = fopen(argv[1], "r")))
-        {
-            perror(argv[1]);
-            return 1;
-        }
-    }
-    if (two_tuples_trigger)
-    {
-        printf("\nNow print the two-tuples of \"Lexical Analyzing\":\n");
-        printf("__________________________________________________\n\n");
-    }
-    yyparse();
-    return 0;
 }
