@@ -1,7 +1,7 @@
 /*
  * @Date: 2020-06-13 17:07:18
  * @LastEditors: zyk
- * @LastEditTime: 2020-06-15 21:01:43
+ * @LastEditTime: 2020-07-01 15:20:08
  * @FilePath: \compiler\GrammarTree.c
  */
 
@@ -83,18 +83,3 @@ void TraverseGrammarTree(GrammarTree gmtree, int level) {
     }
 }
 
-int main(int argc, char **argv) {
-    gmerror = 0;
-    if (argc > 1) {
-        if (!(yyin = fopen(argv[1], "r"))) {
-            perror(argv[1]);
-            return 1;
-        }
-    }
-    if (tuple_trigger) {
-        printf("\nNow print the two-tuples of \"Lexical Analyzing\":\n");
-        printf("__________________________________________________\n\n");
-    }
-    yyparse();
-    return 0;
-}

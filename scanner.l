@@ -1,8 +1,8 @@
 /*
  * @Date: 2020-06-13 17:07:18
  * @LastEditors: zyk
- * @LastEditTime: 2020-06-17 00:54:49
- * @FilePath: /compiler/scanner.l
+ * @LastEditTime: 2020-07-01 15:18:59
+ * @FilePath: \compiler\scanner.l
  */ 
 
 
@@ -18,7 +18,7 @@
     #define DEBUG(...) printf(__VA_ARGS__);
 
     // TODO: 将其改为可通过命令行参数配置
-    int tuple_trigger = 1;  // =1时打印词法分析结果（二元组形式）
+    extern int tuple_trigger;  // =1时打印词法分析结果（二元组形式）
 
     int yycolumn = 1;
 
