@@ -1,8 +1,8 @@
 /*
  * @Date: 2020-06-13 17:07:18
  * @LastEditors: zyk
- * @LastEditTime: 2020-06-15 19:21:38
- * @FilePath: \compiler\GrammarTree.h
+ * @LastEditTime: 2020-07-10 20:35:49
+ * @FilePath: /compiler/GrammarTree.h
  */
 
 #ifndef _GRAMMARTREE_H
@@ -15,6 +15,8 @@
 #include<stdlib.h>
 #include<stdarg.h>
 #include<string.h>
+
+#include"SymbolTable.h"
 
 int gmerror;            // the errors in grammar analyzing
 
@@ -34,6 +36,12 @@ typedef struct GrammarTreeNode {
         char *string_value;
         int int_value;
     };
+	union
+	{
+		LocalScopeEntry local_scope;
+        FormalScopeEntry formal_scope;
+        GlobalScopeEntry global_scope;
+	};
 } GrammarTreeNode;
 
 typedef struct GrammarTreeNode *GrammarTree;

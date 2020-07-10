@@ -1,17 +1,16 @@
 /*
  * @Date: 2020-07-01 12:45:00
  * @LastEditors: zyk
- * @LastEditTime: 2020-07-01 15:06:35
- * @FilePath: \compiler\SymbolTable.hpp
+ * @LastEditTime: 2020-07-10 20:35:26
+ * @FilePath: /compiler/SymbolTable.h
  */
 
 #ifndef _SYMBOLTABLE_H
 #define _SYMBOLTABLE_H
 
-#include <cstdlib>
-#include <vector>
+#include <stdlib.h>
+// #include <vector>
 
-#include "ArrayInfo.hpp"
 #include "SysYCategory.h"
 
 using namespace std;
@@ -20,10 +19,10 @@ using namespace std;
 typedef struct LocalScopeEntry {
   char *name;
   SymbolCategory symbol_type;
-  vector<LocalScopeEntry> *embedded_scope; // 内嵌域符号表
+  // vector<LocalScopeEntry> *embedded_scope; // 内嵌域符号表
 } LocalScopeEntry;
 
-typedef vector<LocalScopeEntry> LocalScope;
+// typedef vector<LocalScopeEntry> LocalScope;
 
 // 函数形参作用域符号表
 typedef struct FormalScopeEntry {
@@ -31,7 +30,7 @@ typedef struct FormalScopeEntry {
   SymbolCategory formal_type; // 形参类型
 } FormalScopeEntry;
 
-typedef vector<FormalScopeEntry> FormalScope;
+// typedef vector<FormalScopeEntry> FormalScope;
 
 typedef struct GlobalScopeEntry {
   char *name;
@@ -40,10 +39,10 @@ typedef struct GlobalScopeEntry {
   union {
     int init_val;          // 整型常量初值
     int formal_count;      // 函数形参个数
-    ArrayInfo *array_info; // 数组信息
+    // ArrayInfo *array_info; // 数组信息
   };
-  FormalScope *formal_scope; // 函数形参域
-  LocalScope *local_scope;   // 函数体域
-};
+  // FormalScope *formal_scope; // 函数形参域
+  // LocalScope *local_scope;   // 函数体域
+} GlobalScopeEntry;
 
 #endif // _SYMBOLTABLE_H
