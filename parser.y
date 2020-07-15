@@ -1,7 +1,7 @@
 /*
  * @Date: 2020-06-13 17:07:18
  * @LastEditors: zyk
- * @LastEditTime: 2020-06-17 11:40:53
+ * @LastEditTime: 2020-07-15 12:09:31
  * @FilePath: /compiler/parser.y
  */ 
 
@@ -57,6 +57,7 @@
 %%
 Program : CompUnit {
     $$ = CreateGrammarTree(Program, 1, $1); 
+    // 完成创建AST 打印二元组和语法树
     if (tuple_trigger)
     {
         printf("__________________________________________________\n\n");
@@ -70,45 +71,55 @@ Program : CompUnit {
         printf("__________________________________________________\n\n"); 
         printf("The grammar-tree of \"Grammar Analyzing\" is printed!\n\n"); 
     }
+    // 把CompUnit的GlobalScope作为Program的GlobalScope
 }
 ;
 
 CompUnit:
     Decl {
     $$ = CreateGrammarTree(CompUnit, 1, $1);
+    // 新建一个GlobalScope 因为Decl默认为LocalScope 所以需要对其进行转换
 }
 |   FuncDef {
     $$ = CreateGrammarTree(CompUnit, 1, $1);
+    // FuncDef已经是GlobalScope 直接赋值即可
 }
 |   CompUnit Decl {
     $$ = CreateGrammarTree(CompUnit, 2, $1, $2);
+    // 将Decl转换为GlobalScope 然后连接到CompUnit上
 }
 |   CompUnit FuncDef {
     $$ = CreateGrammarTree(CompUnit, 2, $1, $2);
+    // 将FuncDef连接到CompUnit上
 }
 ;
 
 Decl:
     ConstDecl {
     $$ = CreateGrammarTree(Decl, 1, $1);
+    // 直接赋值即可
 }
 |   VarDecl {
     $$ = CreateGrammarTree(Decl, 1, $1);
+    // 直接赋值即可
 }
 ;
 
 ConstDecl:
     T_Const BType ConstDefSeq ';' {
     $$ = CreateGrammarTree(ConstDecl, 3, $1, $2, $3);
+    // 为ConstDefSeq(LocalScope)中的变量添加类型
 }
 ;
 
 ConstDefSeq:
     ConstDef {
     $$ = CreateGrammarTree(ConstDefSeq, 1, $1);
+    // 新建一个LocalScope 放入ConstDef
 }
 |   ConstDefSeq ',' ConstDef {
     $$ = CreateGrammarTree(ConstDefSeq, 2, $1, $3);
+    // 将ConstDef连在ConstDefSeq后
 }
 ;
 
@@ -124,15 +135,18 @@ BType:
 ConstDef:
     T_Identifier '=' ConstInitVal {
     $$ = CreateGrammarTree(ConstDef, 2, $1, $3);
+    // 新建一个LocalScopeEntry
 }
 |   T_Identifier ConstArraySubSeq '=' ConstInitVal {
     $$ = CreateGrammarTree(ConstDef, 3, $1, $2, $4);
+    // 新建一个LocalScopeEntry
 }
 ;
 
 ConstArraySubSeq:
     '[' Exp ']' {
     $$ = CreateGrammarTree(ConstArraySubSeq, 1, $2);
+    // 此为第一维的大小
 }
 | ConstArraySubSeq '[' Exp ']' {
     $$ = CreateGrammarTree(ConstArraySubSeq, 2, $1, $3);
@@ -142,18 +156,22 @@ ConstArraySubSeq:
 ArraySubSeq:
      {
     $$ = CreateGrammarTree(ArraySubSeq, 0, -1);
+    // 新建一个空的选择符
 }
 | ArraySubSeq '[' Exp ']' {
     $$ = CreateGrammarTree(ArraySubSeq, 2, $1, $3);
+    // 将Exp对应的值放在选择符中 若Exp不能计算出值 则报错
 }
 ;
 
 ConstInitVal:
     Exp {
     $$ = CreateGrammarTree(ConstInitVal, 1, $1);
+    // 计算Exp的值
 }
 |   '{' ConstInitValSeq '}' {
     $$ = CreateGrammarTree(ConstInitVal, 1, $2);
+    // TODO: 数组初始化
 }
 |   '{' '}' {
     $$ = CreateGrammarTree(ConstInitVal, 0, -1);
@@ -172,6 +190,7 @@ ConstInitValSeq:
 VarDecl:
     BType VarDefSeq ';' {
     $$ = CreateGrammarTree(VarDecl, 2, $1, $2);
+    // 为LocalScope中的变量添加类型
 }
 ;
 
@@ -220,15 +239,20 @@ InitValSeq:
 FuncDef:
     BType T_Identifier '(' ')' Block {
     $$ = CreateGrammarTree(FuncDef, 3, $1, $2, $5);
+    // 新建一个FormalScopeEntry和GlobalScopeEntry
+    // FormalScope置为Null
+    // LocalScopeEntry置为Block
 }
 |   BType T_Identifier '(' FuncFParams ')' Block {
     $$ = CreateGrammarTree(FuncDef, 4, $1, $2, $4, $6);
+    // 新建一个FormalScopeEntry和GlobalScopeEntry
 }
 ;
 
 FuncFParams:
     FuncFParam {
     $$ = CreateGrammarTree(FuncFParams, 1, $1);
+    // 新建FormalScope 加入FuncParam
 }
 |   FuncFParams ',' FuncFParam {
     $$ = CreateGrammarTree(FuncFParams, 2, $1, $3);
@@ -238,6 +262,7 @@ FuncFParams:
 FuncFParam:
     BType T_Identifier {
     $$ = CreateGrammarTree(FuncFParam, 2, $1, $2);
+    // 新建FormalScopeEntry
 }
 |   BType T_Identifier '[' ']' ArraySubSeq {
     $$ = CreateGrammarTree(FuncFParam, 3, $1, $2, $5);
@@ -247,6 +272,7 @@ FuncFParam:
 Block:
     '{' '}' {
     $$ = CreateGrammarTree(Block, 0, -1);
+    // Block直接设置为空的LocalScopeEntry
 }
 |   '{' BlockItemSeq '}' {
     $$ = CreateGrammarTree(Block, 1, $2);
