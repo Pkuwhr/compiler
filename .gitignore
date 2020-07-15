@@ -1,0 +1,9 @@
+cmake-build-debug/
+CMakeLists.txt
+.idea/
+
+*.o
+*.output
+y.tab.*
+lex.yy.*
+compiler
