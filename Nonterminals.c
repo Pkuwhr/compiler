@@ -1,12 +1,12 @@
 /*
  * @Date: 2020-06-15 19:40:12
  * @LastEditors: zyk
- * @LastEditTime: 2020-06-17 07:07:25
+ * @LastEditTime: 2020-07-15 15:29:50
  * @FilePath: /compiler/Nonterminals.c
  */
 #include"Nonterminals.h"
 #include"GrammarTree.h"
-#include"y.tab.h"
+#include"parser.tab.h"
 
 char *NameOf(int type) {
     switch (type) {

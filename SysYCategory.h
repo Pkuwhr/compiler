@@ -1,8 +1,8 @@
 /*
  * @Date: 2020-07-01 11:31:14
  * @LastEditors: zyk
- * @LastEditTime: 2020-07-01 13:17:56
- * @FilePath: \compiler\SysYCategory.h
+ * @LastEditTime: 2020-07-15 15:22:48
+ * @FilePath: /compiler/SysYCategory.h
  */
 
 #ifndef _SYSYCATEGORY_H
@@ -16,7 +16,7 @@ typedef enum SymbolCategory {
   ConstInt,   // 整型常量
   Function,   // 函数
   LibFunc,    // 库函数
-  Block,      // 内嵌语句块
+  EmbeddedBlock,      // 内嵌语句块
   None        // 缺省类型
 } SymbolCategory;
 

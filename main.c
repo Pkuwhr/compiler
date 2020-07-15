@@ -1,13 +1,14 @@
 /*
  * @Date: 2020-07-01 15:19:44
  * @LastEditors: zyk
- * @LastEditTime: 2020-07-01 15:23:03
- * @FilePath: \compiler\main.c
+ * @LastEditTime: 2020-07-15 15:33:08
+ * @FilePath: /compiler/main.c
  */
 
 #include "main.h"
 
 int tuple_trigger = 1;
+int gmerror;            // the errors in grammar analyzing
 
 int main(int argc, char **argv) {
   gmerror = 0;

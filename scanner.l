@@ -1,8 +1,8 @@
 /*
  * @Date: 2020-06-13 17:07:18
  * @LastEditors: zyk
- * @LastEditTime: 2020-07-01 15:18:59
- * @FilePath: \compiler\scanner.l
+ * @LastEditTime: 2020-07-15 15:27:28
+ * @FilePath: /compiler/scanner.l
  */ 
 
 
@@ -10,7 +10,7 @@
     #include<stdio.h>
     #include<stdlib.h>
     #include"GrammarTree.h"
-    #include"y.tab.h"
+    #include"parser.tab.h"
 
     // 用于打印词法分析结果
     #define PRINT_TUPLE(...) if(tuple_trigger) printf(__VA_ARGS__);

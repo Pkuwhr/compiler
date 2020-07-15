@@ -1,7 +1,7 @@
 /*
  * @Date: 2020-06-13 17:07:18
  * @LastEditors: zyk
- * @LastEditTime: 2020-07-10 20:35:49
+ * @LastEditTime: 2020-07-15 15:33:41
  * @FilePath: /compiler/GrammarTree.h
  */
 
@@ -17,8 +17,6 @@
 #include<string.h>
 
 #include"SymbolTable.h"
-
-int gmerror;            // the errors in grammar analyzing
 
 extern char *yytext;
 extern FILE *yyin;

@@ -1,78 +1,78 @@
-.PHONY: clean functional-test performance-test
+########################################################################
+####################### Makefile Template ##############################
+########################################################################
 
-# Set the default target. When you make with no arguments,
-# this will be the target built.
-COMPILER = compiler
-PRODUCTS = $(COMPILER)
-default: $(PRODUCTS)
+# Compiler settings - Can be customized.
+CC = g++
+CXXFLAGS = -std=c++11 -Wall
+LDFLAGS = -lc -lm -ll
 
-# Set up the list of source and object files
-SRCS = GrammarTree.c Nonterminals.c main.c
+# Makefile settings - Can be customized.
+APPNAME = compiler
+EXT = .c
+SRCDIR = .
+OBJDIR = .
 
-# OBJS can deal with either .cc or .c files listed in SRCS
-OBJS = y.tab.o lex.yy.o $(patsubst %.cc, %.o, $(filter %.cc,$(SRCS))) $(patsubst %.c, %.o, $(filter %.c, $(SRCS)))
+############## Do not change anything from here downwards! #############
+SRC = $(wildcard $(SRCDIR)/*$(EXT))
+OBJ = $(SRC:$(SRCDIR)/%$(EXT)=$(OBJDIR)/%.o)
+DEP = $(OBJ:$(OBJDIR)/%.o=%.d)
+# UNIX-based OS variables & settings
+RM = rm
+DELOBJ = $(OBJ)
+# Windows OS variables & settings
+DEL = del
+EXE = .exe
+WDELOBJ = $(SRC:$(SRCDIR)/%$(EXT)=$(OBJDIR)\\%.o)
 
-JUNK = *.o lex.yy.c y.tab.c y.tab.h
+########################################################################
+####################### Targets beginning here #########################
+########################################################################
 
-LEX_SRC = scanner.l
+all: $(APPNAME)
 
-YACC_SRC = parser.y
+# Builds the app
+$(APPNAME): $(OBJ)
+	$(CC) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
 
-# Define the tools we are going to use
-CC = gcc
-LD = gcc
-LEX = flex
-YACC = bison
+# Creates the dependecy rules
+%.d: $(SRCDIR)/%$(EXT)
+	@$(CPP) $(CFLAGS) $< -MM -MT $(@:%.d=$(OBJDIR)/%.o) >$@
 
-# Set up the necessary flags for the tools
-EXTRA_CFLAGS = 
+# Includes all .h files
+-include $(DEP)
 
-ifdef opt
-EXTRA_CFLAGS = -DDCC_OPTIMIZATION
-endif
+# Building rule for .o files and its .c/.cpp in combination with all .h
+$(OBJDIR)/%.o: $(SRCDIR)/%$(EXT) parser.y scanner.l
+	# ! Compile yacc and lex files
+	bison -dvt parser.y
+	g++ -Wall -Wno-unused -Wno-sign-compare -c parser.tab.c
+	flex -dL scanner.l
+	g++ -Wall -Wno-unused -Wno-sign-compare -c lex.yy.c
+	# origin lines
+	$(CC) $(CXXFLAGS) -o $@ -c $<
 
-# We want debugging and most warnings, but lex/yacc generate some
-# static symbols we don't use, so turn off unused warnings to avoid clutter
-# Also STL has some signed/unsigned comparisons we want to suppress
-CFLAGS = -g -Wall -Wno-unused -Wno-sign-compare
-
-# The -d flag tells lex to set up for debugging. Can turn on/off by
-# setting value of global yy_flex_debug inside the scanner itself
-# The -L flag makes lex.yy.c able to be debugged.
-LEXFLAGS = -dL
-
-# The -d flag tells yacc to generate header with token types
-# The -v flag writes out a verbose description of the states and conflicts
-# The -t flag turns on debugging capability
-# The -y flag means imitate yacc's output file naming conventions
-YACCFLAGS = -dvty
-
-# Link with standard C library, math library, and lex library
-LIBS = -lc -lm -ll
-
-# Rules for various parts of the target
-
-y.tab.h y.tab.c: $(YACC_SRC)
-	$(YACC) $(YACCFLAGS) $(YACC_SRC)
-
-lex.yy.c: $(LEX_SRC) y.tab.h y.tab.c
-	$(LEX) $(LEXFLAGS) -o $@ $(LEX_SRC) 
-
-.o: $*.c
-	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -c -o $@ $*.c
-
-# rules to build compiler (dcc)
-.DELETE_ON_ERROR:
-$(COMPILER): $(OBJS)
-	$(LD) -o $@ $(OBJS) $(LIBS)
-
-
-# This target is to build small for testing (no debugging info), removes
-# all intermediate products, too
-strip : $(PRODUCTS)
-	strip $(PRODUCTS)
-	rm -rf $(JUNK)
-
+################### Cleaning rules for Unix-based OS ###################
+# Cleans complete project
+.PHONY: clean
 clean:
-	rm -f $(JUNK) y.output $(PRODUCTS)
+	$(RM) $(DELOBJ) $(DEP) $(APPNAME)
+	# ! rm *.tab.c *.tab.h and lex.yy.c
+	$(RM) parser.tab.c parser.tab.h parser.output
+	$(RM) lex.yy.c
 
+# Cleans only all files with the extension .d
+.PHONY: cleandep
+cleandep:
+	$(RM) $(DEP)
+
+#################### Cleaning rules for Windows OS #####################
+# Cleans complete project
+.PHONY: cleanw
+cleanw:
+	$(DEL) $(WDELOBJ) $(DEP) $(APPNAME)$(EXE)
+
+# Cleans only all files with the extension .d
+.PHONY: cleandepw
+cleandepw:
+	$(DEL) $(DEP)

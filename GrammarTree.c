@@ -1,14 +1,14 @@
 /*
  * @Date: 2020-06-13 17:07:18
  * @LastEditors: zyk
- * @LastEditTime: 2020-07-01 15:20:08
- * @FilePath: \compiler\GrammarTree.c
+ * @LastEditTime: 2020-07-15 15:29:40
+ * @FilePath: /compiler/GrammarTree.c
  */
 
 
 #include"GrammarTree.h"
 #include"Nonterminals.h"
-#include"y.tab.h"
+#include"parser.tab.h"
 
 extern int tuple_trigger;
 
