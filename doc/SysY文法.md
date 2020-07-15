@@ -1,13 +1,8 @@
-<!--
- * @Date: 2020-06-13 23:28:40
- * @LastEditors: zyk
- * @LastEditTime: 2020-06-17 11:53:50
- * @FilePath: /compiler/doc/SysY文法.md
--->
-
 # SysY文法
 
 原文档《[SysY语言定义](https://gitlab.eduxiji.net/nscscc/docs/-/blob/master/SysY语言定义.pdf)》中采用EBNF范式表示，为了使用Bison自动生成语法分析器，需要将其修改为基本的上下文无关文法表示法。
+
+程序中使用二叉树存储**AST**，中间节点的左子节点表示其孩子，右子节点表示其兄弟。
 
 | 说明             | 左部               | 右部                                                         |
 | ---------------- | ------------------ | ------------------------------------------------------------ |
@@ -24,7 +19,7 @@
 | 变量声明         | `VarDecl`          | `BType VarDefSeq ';'`                                        |
 | 变量定义列表     | `VarDefSeq`        | `VarDef`<br />`VarDefSeq ',' VarDef`                         |
 | 变量定义         | `VarDef`           | `Ident`<br />`Ident ConstArraySubSeq`<br />`Ident '=' InitVal`<br />`Ident ConstArraySubSeq '=' InitVal` |
-| 变量初值         | `InitVal`          | `Exp`<br />`'{' InitValSeq '}'`                              |
+| 变量初值         | `InitVal`          | `Exp`<br />`'{' InitValSeq '}'`<br />`'{' '}'`               |
 | 变量初值列表     | `InitValSeq`       | `InitVal`<br />`InitValSeq ',' InitVal`                      |
 | 函数定义         | `FuncDef`          | `BType Ident '(' ')' Block`<br />`BType Ident '(' FuncFParams ')' Block` |
 | 函数形参表       | `FuncFParams`      | `FuncFParam`<br />`FuncFParams ',' FuncFParam`               |

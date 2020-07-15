@@ -157,9 +157,9 @@
 
 4. 函数体/语句块**Local**作用域符号表
 
-| 名字: char* | 类别: Symbol Category                         | 内嵌域列表: LocalScope          |
-| ----------- | --------------------------------------------- | ------------------------------- |
-| name        | VarArray, ConstArray, VarInt, ConstInt, Block | Block: pointer<br />other: null |
+| 名字: char* | 类别: Symbol Category                         | 附加信息   | 内嵌域列表: LocalScope          |
+| ----------- | --------------------------------------------- | ---------- | ------------------------------- |
+| name        | VarArray, ConstArray, VarInt, ConstInt, Block | 常量初始值 | Block: pointer<br />other: null |
 
 遇到内嵌域（比如`for`循环里的`Block`）时，类别置为`Block`，内嵌列表指针指向子作用域符号表。
 
