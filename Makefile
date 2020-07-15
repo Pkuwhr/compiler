@@ -9,7 +9,7 @@ LDFLAGS = -lc -lm -ll
 
 # Makefile settings - Can be customized.
 APPNAME = compiler
-EXT = .c
+EXT = .cpp
 SRCDIR = .
 OBJDIR = .
 
@@ -33,7 +33,7 @@ all: $(APPNAME)
 
 # Builds the app
 $(APPNAME): $(OBJ)
-	$(CC) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
+	$(CC) $(CXXFLAGS) -o $@ parser.tab.o lex.yy.o $^ $(LDFLAGS) # ! Add lex.yy.o and parser.tab.o
 
 # Creates the dependecy rules
 %.d: $(SRCDIR)/%$(EXT)

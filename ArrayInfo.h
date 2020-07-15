@@ -1,7 +1,7 @@
 /*
  * @Date: 2020-07-15 16:06:28
  * @LastEditors: zyk
- * @LastEditTime: 2020-07-15 16:55:46
+ * @LastEditTime: 2020-07-15 21:25:23
  * @FilePath: /compiler/ArrayInfo.h
  */ 
 
@@ -11,6 +11,7 @@
 #include <vector>
 // #include <iostream>
 #include <cstring>
+#include <cstdlib>
 
 using namespace std;
 

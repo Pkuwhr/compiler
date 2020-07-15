@@ -1,7 +1,7 @@
 /*
  * @Date: 2020-06-13 17:07:18
  * @LastEditors: zyk
- * @LastEditTime: 2020-07-15 15:57:20
+ * @LastEditTime: 2020-07-15 21:29:09
  * @FilePath: /compiler/parser.y
  */ 
 
@@ -14,6 +14,8 @@
     int yylex();
     void yyerror(const char* fmt, ...);
     extern int tuple_trigger;
+    extern int gmerror;
+    extern int yylineno;
 %}
 
 %define parse.error verbose

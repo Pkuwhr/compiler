@@ -1,16 +1,27 @@
 /*
  * @Date: 2020-06-13 17:07:18
  * @LastEditors: zyk
- * @LastEditTime: 2020-07-15 15:29:40
- * @FilePath: /compiler/GrammarTree.c
+ * @LastEditTime: 2020-07-15 21:29:54
+ * @FilePath: /compiler/GrammarTree.cpp
  */
 
 
 #include"GrammarTree.h"
 #include"Nonterminals.h"
-#include"parser.tab.h"
+extern "C" {
+    #include"parser.tab.h"
+}
+
 
 extern int tuple_trigger;
+
+extern FILE *yyin;
+extern int yylineno;
+
+extern "C" {
+  extern char *yytext;
+  extern int yyparse();
+}
 
 GrammarTree CreateGrammarTree(int type, int num, ...) {
     char *value_buffer; // 存放标识符名称/常量的值

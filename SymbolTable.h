@@ -1,7 +1,7 @@
 /*
  * @Date: 2020-07-01 12:45:00
  * @LastEditors: zyk
- * @LastEditTime: 2020-07-15 16:56:41
+ * @LastEditTime: 2020-07-15 17:28:19
  * @FilePath: /compiler/SymbolTable.h
  */
 
@@ -9,10 +9,11 @@
 #define _SYMBOLTABLE_H
 
 #include <cstdlib>
+#include <iostream>
 #include <vector>
 
-#include "SysYCategory.h"
 #include "ArrayInfo.h"
+#include "SysYCategory.h"
 
 using namespace std;
 
@@ -42,8 +43,8 @@ typedef struct GlobalScopeEntry {
   SymbolCategory symbol_type; // 全局符号类型
   ReturnCategory rev_type;    // 函数返回值类型
   union {
-    int init_val;          // 整型常量初值
-    int formal_count;      // 函数形参个数
+    int init_val;     // 整型常量初值
+    int formal_count; // 函数形参个数
     ArrayInfo *array_info;
   };
   FormalScope *formal_scope; // 函数形参域

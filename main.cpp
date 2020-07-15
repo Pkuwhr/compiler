@@ -1,8 +1,8 @@
 /*
  * @Date: 2020-07-01 15:19:44
  * @LastEditors: zyk
- * @LastEditTime: 2020-07-15 15:33:08
- * @FilePath: /compiler/main.c
+ * @LastEditTime: 2020-07-15 21:41:20
+ * @FilePath: /compiler/main.cpp
  */
 
 #include "main.h"
@@ -19,8 +19,8 @@ int main(int argc, char **argv) {
     }
   }
   if (tuple_trigger) {
-    printf("\nNow print the two-tuples of \"Lexical Analyzing\":\n");
-    printf("__________________________________________________\n\n");
+    std::cout << "\nNow print the two-tuples of \"Lexical Analyzing\":\n";
+    cout << "__________________________________________________\n\n";
   }
   yyparse();
   return 0;
