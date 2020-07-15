@@ -1,7 +1,7 @@
 /*
  * @Date: 2020-07-15 16:06:28
  * @LastEditors: zyk
- * @LastEditTime: 2020-07-15 16:34:06
+ * @LastEditTime: 2020-07-15 16:55:46
  * @FilePath: /compiler/ArrayInfo.h
  */ 
 
@@ -19,5 +19,14 @@ typedef struct ArrayInitValue {
 
     bool init(vector<int> dims, int **pvalues); // 输入维度 创建数组
 } ArrayInitValue;
+
+typedef struct ArrayInfo {
+    vector<int> dims; // 数组维度向量
+
+    // - 数组初值 -
+    // * 使用时需要先分配空间
+    // * 对于没有初值的数组 默认为Null
+    struct ArrayInitValue *init_value;
+} ArrayInfo;
 
 #endif
