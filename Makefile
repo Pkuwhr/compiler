@@ -47,7 +47,7 @@ $(OBJDIR)/%.o: $(SRCDIR)/%$(EXT) parser.y scanner.l
 	# ! Compile yacc and lex files
 	bison -dvt parser.y
 	g++ -Wall -Wno-unused -Wno-sign-compare -c parser.tab.c
-	flex -dL scanner.l
+	flex -L scanner.l
 	g++ -Wall -Wno-unused -Wno-sign-compare -c lex.yy.c
 	# origin lines
 	$(CC) $(CXXFLAGS) -o $@ -c $<
