@@ -29,6 +29,6 @@
 | 语句块项         | `BlockItem`        | `Decl`<br />`Stmt`                                           |
 | 语句             | `Stmt`             | `LVal '=' Exp ';'`<br />`Exp ';'`<br />`';'`<br />`Block`<br />`'if' '(' Exp ')' Stmt`<br />`'if' '(' Exp ')' Stmt 'else' Stmt`<br />`'while' '(' Exp ')' Stmt`<br />`'break' ';'`<br />`'continue' ';'`<br />`'return' Exp ';'`<br />`'return' ';'` |
 | 表达式           | `Exp`              | `'(' Exp ')'`<br />`LVal`<br />`StringConstant`<br />`IntConstant`<br />`Ident '(' FuncRParams ')'`<br />`Ident '(' ')'`<br />`'+' Exp`<br />`'-' Exp`<br />`'!' Exp`<br />`Exp '*' Exp`<br />`Exp '/' Exp`<br />`Exp '%' Exp`<br />`Exp '+' Exp`<br />`Exp '-' Exp`<br />`Exp '<' Exp`<br />`Exp '>' Exp`<br />`Exp '<=' Exp`<br />`Exp '>=' Exp`<br />`Exp '==' Exp`<br />`Exp '!=' Exp`<br />`Exp '&&' Exp`<br />`Exp '||' Exp` |
-| 左值表达式       | `LVal`             | `Ident ArraySubSeq`                                          |
+| 左值表达式       | `LVal`             | `Ident ArraySubSeq`<br />`Ident`                             |
 | 函数实参表       | `FuncRParams`      | `Exp`<br />`FuncRParams ',' Exp`                             |
 

@@ -1,11 +1,10 @@
 /*
  * @Date: 2020-07-15 21:53:37
  * @LastEditors: zyk
- * @LastEditTime: 2020-07-25 10:25:51
+ * @LastEditTime: 2020-07-25 14:26:40
  * @FilePath: /compiler/ScopeStack.cpp
  */
 #include "ScopeStack.h"
-#include "Nonterminals.h"
 
 void InitScopeStack(ScopeStack &stack) { stack.clear(); }
 
@@ -75,14 +74,149 @@ ScopeEntry TraverseScopeStack(ScopeStack &stack, char *name) {
   return result;
 }
 
-ExprType *GetExprType(GrammarTree tree, ScopeStack &stack) {
-  // TODO: find the type of expr represented by 'tree'
-// 这个可能并不需要？但是需要一个函数判断expr是不是常数
+// check if given root is a constant expr
+void CheckExprValue(GrammarTree tree, ScopeStack &stack) {
+  assert(tree->type == Exp);
   if (!tree)
-    return nullptr;
-  ExprType *result = nullptr;
-}
+    return;
 
+  if (tree->lchild->type == Exp) {
+    // Exp '*' Exp 形式
+    if (!tree->lchild->isVisited)
+      CheckExprValue(tree->lchild, stack);
+    if (!tree->lchild->rchild->rchild->isVisited)
+      CheckExprValue(tree->lchild->rchild->rchild, stack);
+
+    if (tree->lchild->is_constant_expr &&
+        tree->lchild->rchild->rchild->is_constant_expr) {
+      tree->is_constant_expr = true;
+      switch (tree->lchild->rchild->type) {
+      case '*':
+        tree->expr_value =
+            tree->lchild->expr_value * tree->lchild->rchild->rchild->expr_value;
+        break;
+      case '/':
+        tree->expr_value =
+            tree->lchild->expr_value / tree->lchild->rchild->rchild->expr_value;
+        break;
+      case '%':
+        tree->expr_value =
+            tree->lchild->expr_value % tree->lchild->rchild->rchild->expr_value;
+        break;
+      case '+':
+        tree->expr_value =
+            tree->lchild->expr_value + tree->lchild->rchild->rchild->expr_value;
+        break;
+      case '-':
+        tree->expr_value =
+            tree->lchild->expr_value - tree->lchild->rchild->rchild->expr_value;
+        break;
+      case '<':
+        tree->expr_value = (tree->lchild->expr_value <
+                            tree->lchild->rchild->rchild->expr_value)
+                               ? 1
+                               : 0;
+        break;
+      case '>':
+        tree->expr_value = (tree->lchild->expr_value >
+                            tree->lchild->rchild->rchild->expr_value)
+                               ? 1
+                               : 0;
+        break;
+      case T_LessEqual:
+        tree->expr_value = (tree->lchild->expr_value <=
+                            tree->lchild->rchild->rchild->expr_value)
+                               ? 1
+                               : 0;
+        break;
+      case T_GreaterEqual:
+        tree->expr_value = (tree->lchild->expr_value >=
+                            tree->lchild->rchild->rchild->expr_value)
+                               ? 1
+                               : 0;
+        break;
+      case T_Equal:
+        tree->expr_value = (tree->lchild->expr_value ==
+                            tree->lchild->rchild->rchild->expr_value)
+                               ? 1
+                               : 0;
+        break;
+      case T_NotEqual:
+        tree->expr_value = (tree->lchild->expr_value !=
+                            tree->lchild->rchild->rchild->expr_value)
+                               ? 1
+                               : 0;
+        break;
+      case T_And:
+        tree->expr_value = (tree->lchild->expr_value &&
+                            tree->lchild->rchild->rchild->expr_value)
+                               ? 1
+                               : 0;
+        break;
+      case T_Or:
+        tree->expr_value = (tree->lchild->expr_value ||
+                            tree->lchild->rchild->rchild->expr_value)
+                               ? 1
+                               : 0;
+        break;
+
+      default:
+        break;
+      }
+    } else {
+      tree->is_constant_expr = false;
+    }
+    tree->isVisited = true;
+  } else if (tree->lchild->type == '(') {
+    // '(' Exp ')'
+    if (!tree->lchild->rchild->isVisited)
+      CheckExprValue(tree->lchild->rchild, stack);
+
+    if (tree->lchild->rchild->is_constant_expr) {
+      tree->expr_value = tree->lchild->rchild->expr_value;
+      tree->is_constant_expr = true;
+    } else {
+      tree->is_constant_expr = false;
+    }
+    tree->isVisited = true;
+  } else if (tree->lchild->rchild->type == Exp) {
+    // '-' Exp
+    if (!tree->lchild->rchild->isVisited)
+      CheckExprValue(tree->lchild->rchild, stack);
+
+    if (tree->lchild->rchild->is_constant_expr) {
+      tree->is_constant_expr = true;
+      switch (tree->lchild->type) {
+      case '-':
+        tree->expr_value = -(tree->lchild->rchild->expr_value);
+        break;
+      case '+':
+        tree->expr_value = +(tree->lchild->rchild->expr_value);
+        break;
+      case '!':
+        // ! 操作数必须为0或1
+        assert(tree->lchild->rchild->expr_value == 0 ||
+               tree->lchild->rchild->expr_value == 1);
+        tree->expr_value = (tree->lchild->rchild->expr_value) ^ 1;
+        break;
+
+      default:
+        break;
+      }
+    } else {
+      tree->is_constant_expr = false;
+    }
+    tree->isVisited = true;
+  } else if (tree->lchild->type == T_IntConstant) {
+    tree->isVisited = true;
+    tree->is_constant_expr = true;
+    tree->expr_value = tree->lchild->int_value;
+  } else {
+    tree->isVisited = true;
+    tree->is_constant_expr = false;
+  }
+  return;
+}
 
 void ScopeTrial(GrammarTree tree, Scope scope, ScopeStack &stack) {
   // TODO: traverse the tree and calculate semantic fault

@@ -1,7 +1,7 @@
 /*
  * @Date: 2020-07-15 21:53:37
  * @LastEditors: zyk
- * @LastEditTime: 2020-07-22 11:26:10
+ * @LastEditTime: 2020-07-25 14:05:05
  * @FilePath: /compiler/ScopeStack.h
  */
 #ifndef _SCOPESTACK_H
@@ -9,14 +9,15 @@
 
 #include "GrammarTree.h"
 #include "SymbolTable.h"
+#include "Nonterminals.h"
+#include "parser.tab.h"
+
 #include <string>
 #include <iostream>
 #include <vector>
+#include <cassert>
 
 using namespace std;
-
-#define STACK_INIT_SIZE 100
-#define STACKINCREMENT 20
 
 extern int smerror;
 
@@ -47,8 +48,6 @@ typedef struct ScopeEntry {
 
 typedef vector<Scope&> ScopeStack;
 
-typedef SymbolCategory ExprType;
-
 void InitScopeStack(ScopeStack &stack);
 void DestroyScopeStack(ScopeStack &stack);
 int ScopeStackLength(ScopeStack &stack);
@@ -57,7 +56,7 @@ Scope &ScopeStackPop(ScopeStack &stack);
 Scope &GetStackTop();
 
 ScopeEntry TraverseScopeStack(ScopeStack &stack, string name);
-ExprType *GetExprType(GrammarTree tree, ScopeStack &stack);
+void CheckExprValue(GrammarTree tree, ScopeStack &stack);
 void ScopeTrial(GrammarTree tree, Scope scope, ScopeStack &stack);
 
 #endif
