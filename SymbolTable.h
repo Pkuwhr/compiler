@@ -58,9 +58,11 @@ GlobalScope &AddLocalIntoGlobal(GlobalScope &global_scope,
 // TODO
 GlobalScope &AddGlobalIntoGlobal(GlobalScope &global_scope_1,
                                  GlobalScope &global_scope_2);
-void AttachTypeToLocalScope();
-void AddLocalIntoLocal();
-void NewLocalIntEntry();
-void NewLocalArrayEntry();
+
+
+void AttachTypeToLocalScope(LocalScope local_scope,SymbolCategory category);
+LocalScope &AddLocalIntoLocal(LocalScope &local_scope_1,LocalScope &local_scope_2);
+LocalScopeEntry &NewLocalIntEntry(char* name,int val);
+LocalScopeEntry &NewLocalArrayEntry(char* name,ArrayInfo *array_info);
 
 #endif // _SYMBOLTABLE_H
