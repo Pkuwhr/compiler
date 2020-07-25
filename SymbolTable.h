@@ -1,7 +1,7 @@
 /*
  * @Date: 2020-07-01 12:45:00
  * @LastEditors: zyk
- * @LastEditTime: 2020-07-15 17:28:19
+ * @LastEditTime: 2020-07-25 10:37:13
  * @FilePath: /compiler/SymbolTable.h
  */
 
@@ -52,5 +52,15 @@ typedef struct GlobalScopeEntry {
 } GlobalScopeEntry;
 
 typedef vector<GlobalScopeEntry> GlobalScope;
+
+GlobalScope &AddLocalIntoGlobal(GlobalScope &global_scope,
+                                LocalScope &local_scope);
+// TODO
+GlobalScope &AddGlobalIntoGlobal(GlobalScope &global_scope_1,
+                                 GlobalScope &global_scope_2);
+void AttachTypeToLocalScope();
+void AddLocalIntoLocal();
+void NewLocalIntEntry();
+void NewLocalArrayEntry();
 
 #endif // _SYMBOLTABLE_H

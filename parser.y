@@ -1,7 +1,7 @@
 /*
  * @Date: 2020-06-13 17:07:18
  * @LastEditors: zyk
- * @LastEditTime: 2020-07-15 21:29:09
+ * @LastEditTime: 2020-07-25 02:24:50
  * @FilePath: /compiler/parser.y
  */ 
 
@@ -9,13 +9,21 @@
 %{
     #include<stdio.h>
     #include<unistd.h>
+
     #include"GrammarTree.h"
     #include"Nonterminals.h"
+    #include"ScopeStack.h"
+    #include"ArrayInfo.h"
+    
     int yylex();
     void yyerror(const char* fmt, ...);
+    
     extern int tuple_trigger;
+    extern int semantic_check;
     extern int gmerror;
     extern int yylineno;
+
+    ScopeStack stack;
 %}
 
 %define parse.error verbose
@@ -59,6 +67,7 @@
 
 %%
 Program : CompUnit {
+    // 1. 语法分析 建立AST
     $$ = CreateGrammarTree(Program, 1, $1); 
     // 完成创建AST 打印二元组和语法树
     if (tuple_trigger)
@@ -75,25 +84,48 @@ Program : CompUnit {
         printf("The grammar-tree of \"Grammar Analyzing\" is printed!\n\n"); 
     }
     // 把CompUnit的GlobalScope作为Program的GlobalScope
+    $$->global_scope = $1->global_scope;
+    InitScopeStack(stack);
+    Scope scope;
+    scope.type = ScopeGlobal;
+    scope.global = $$->global_scope;
+    // 若semantic_check开启 则执行ScopeTrial进行静态语义检查
+    if (semantic_check) 
+    {
+        ScopeTrial($$, scope, stack);
+    }
+    // 没有语义错误时 打印符号表
+    if (!smerror)
+    {
+        printf("\nNow print the symbol tables of \"Semantic Analyzing\":\n");
+        printf("__________________________________________________\n\n"); 
+        DisplayGlobalScope($1->global_scope, "Program"); // TODO: impl this
+        printf("__________________________________________________\n\n"); 
+        printf("The symbol tables of \"Semantic Analyzing\" is printed!\n\n"); 
+    }
 }
 ;
 
 CompUnit:
     Decl {
     $$ = CreateGrammarTree(CompUnit, 1, $1);
-    // 新建一个GlobalScope 因为Decl默认为LocalScope 所以需要对其进行转换
+    // 新建一个GlobalScopeEntry 因为Decl默认为LocalScopeEntry 所以需要对其进行转换
+    $$->global_scope = AddLocalIntoGlobal();
 }
 |   FuncDef {
     $$ = CreateGrammarTree(CompUnit, 1, $1);
-    // FuncDef已经是GlobalScope 直接赋值即可
+    // FuncDef已经是GlobalScopeEntry 直接加入即可
+    $$->global_scope = AddGlobalIntoGlobal();
 }
 |   CompUnit Decl {
     $$ = CreateGrammarTree(CompUnit, 2, $1, $2);
-    // 将Decl转换为GlobalScope 然后连接到CompUnit上
+    // 将Decl转换为GlobalScopeEntry 然后连接到CompUnit上
+    $$->global_scope = AddLocalIntoGlobal();
 }
 |   CompUnit FuncDef {
     $$ = CreateGrammarTree(CompUnit, 2, $1, $2);
     // 将FuncDef连接到CompUnit上
+    $$->global_scope = AddGlobalIntoGlobal();
 }
 ;
 
@@ -101,17 +133,20 @@ Decl:
     ConstDecl {
     $$ = CreateGrammarTree(Decl, 1, $1);
     // 直接赋值即可
+    $$->local_scope = $1->local_scope;
 }
 |   VarDecl {
     $$ = CreateGrammarTree(Decl, 1, $1);
     // 直接赋值即可
+    $$->local_scope = $1->local_scope;
 }
 ;
 
 ConstDecl:
     T_Const BType ConstDefSeq ';' {
     $$ = CreateGrammarTree(ConstDecl, 3, $1, $2, $3);
-    // 为ConstDefSeq(LocalScope)中的变量添加类型
+    // 为ConstDefSeq(LocalScope)中的变量添加类型const和BType
+    AttachTypeToLocalScope();
 }
 ;
 
@@ -119,10 +154,12 @@ ConstDefSeq:
     ConstDef {
     $$ = CreateGrammarTree(ConstDefSeq, 1, $1);
     // 新建一个LocalScope 放入ConstDef
+    $$->local_scope = AddLocalIntoLocal();
 }
 |   ConstDefSeq ',' ConstDef {
     $$ = CreateGrammarTree(ConstDefSeq, 2, $1, $3);
     // 将ConstDef连在ConstDefSeq后
+    $$->local_scope = AddLocalIntoLocal();
 }
 ;
 
@@ -139,10 +176,12 @@ ConstDef:
     T_Identifier '=' ConstInitVal {
     $$ = CreateGrammarTree(ConstDef, 2, $1, $3);
     // 新建一个LocalScopeEntry
+    $$->local_entry = NewLocalIntEntry();
 }
 |   T_Identifier ConstArraySubSeq '=' ConstInitVal {
     $$ = CreateGrammarTree(ConstDef, 3, $1, $2, $4);
     // 新建一个LocalScopeEntry
+    $$->local_entry = NewLocalArrayEntry();
 }
 ;
 
@@ -150,27 +189,41 @@ ConstArraySubSeq:
     '[' Exp ']' {
     $$ = CreateGrammarTree(ConstArraySubSeq, 1, $2);
     // 此为第一维的大小
+    $$->array_info = (ArrayInfo *)malloc(sizeof(ArrayInfo));
+    // TODO: 检查Exp是否能求值为一常量
+    $$->array_info->dims.clear();
+    $$->array_info->dims.push_back($2->int_value);
 }
 | ConstArraySubSeq '[' Exp ']' {
     $$ = CreateGrammarTree(ConstArraySubSeq, 2, $1, $3);
+    $$->array_info = $1->array_info;
+    $$->array_info->push_back($3->int_value);
 }
 ;
 
+// 此项与ConstArraySubSeq的区别在于这里的Exp不要求在编译时就能计算出值
+// 故这里的Exp在ArrayInfo中保存为GrammarTree*
 ArraySubSeq:
-     {
+    '[' Exp ']' {
     $$ = CreateGrammarTree(ArraySubSeq, 0, -1);
     // 新建一个空的选择符
+    $$->array_info = (ArrayInfo *)malloc(sizeof(ArrayInfo));
+    $$->array_info->exprs.clear();
+    $$->array_info->exprs.push_back($2);
 }
 | ArraySubSeq '[' Exp ']' {
     $$ = CreateGrammarTree(ArraySubSeq, 2, $1, $3);
-    // 将Exp对应的值放在选择符中 若Exp不能计算出值 则报错
+    // 将Exp对应的值放在选择符中
+    $$->array_info = $1->array_info;
+    $$->array_info->push_back($3);
 }
 ;
 
 ConstInitVal:
     Exp {
     $$ = CreateGrammarTree(ConstInitVal, 1, $1);
-    // 计算Exp的值
+    // 计算Exp的值 这里的Exp需要能在编译时就求出值
+    GetExpValue();
 }
 |   '{' ConstInitValSeq '}' {
     $$ = CreateGrammarTree(ConstInitVal, 1, $2);
@@ -178,6 +231,7 @@ ConstInitVal:
 }
 |   '{' '}' {
     $$ = CreateGrammarTree(ConstInitVal, 0, -1);
+    // 这一部分的子数组初始化为全零
 }
 ;
 
@@ -190,10 +244,12 @@ ConstInitValSeq:
 }
 ;
 
+
 VarDecl:
     BType VarDefSeq ';' {
     $$ = CreateGrammarTree(VarDecl, 2, $1, $2);
     // 为LocalScope中的变量添加类型
+    AttachTypeToLocalScope();
 }
 ;
 

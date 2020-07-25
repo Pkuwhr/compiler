@@ -1,7 +1,7 @@
 /*
  * @Date: 2020-07-01 15:19:44
  * @LastEditors: zyk
- * @LastEditTime: 2020-07-15 21:41:20
+ * @LastEditTime: 2020-07-25 10:24:40
  * @FilePath: /compiler/main.cpp
  */
 
@@ -9,6 +9,9 @@
 
 int tuple_trigger = 1;
 int gmerror;            // the errors in grammar analyzing
+int smerror;
+
+int semantic_check = 1; // semantic_check != 0时执行语义检查ScopeTrial
 
 int main(int argc, char **argv) {
   gmerror = 0;

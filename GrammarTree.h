@@ -1,7 +1,7 @@
 /*
  * @Date: 2020-06-13 17:07:18
  * @LastEditors: zyk
- * @LastEditTime: 2020-07-15 21:28:05
+ * @LastEditTime: 2020-07-25 10:24:21
  * @FilePath: /compiler/GrammarTree.h
  */
 
@@ -17,6 +17,7 @@
 #include <cstring>
 
 #include "SymbolTable.h"
+#include "ArrayInfo.h"
 
 using namespace std;
 
@@ -29,12 +30,18 @@ typedef struct GrammarTreeNode {
   union                           // the value of this grammar unit
   {
     char *string_value;
-    int int_value;
+    int int_value; // 用于IntConstant或Exp
   };
   union {
+    // ! 语义分析时节点可能具有的类型
+    // TODO: 还缺少Expr类型
     LocalScope *local_scope;
     FormalScope *formal_scope;
     GlobalScope *global_scope;
+    LocalScopeEntry *local_entry;
+    FormalScopeEntry *formal_entry;
+    GlobalScopeEntry *global_entry;
+    ArrayInfo *array_info;
   };
 } GrammarTreeNode;
 
