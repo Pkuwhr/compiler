@@ -13,7 +13,7 @@
 | 基本类型         | `BType`            | `'int'`<br />`void`                                          |
 | 常数定义         | `ConstDef`         | `Ident '=' ConstInitVal`<br />`Ident ConstArraySubSeq '=' ConstInitVal` |
 | 数组常量下标列表 | `ConstArraySubSeq` | `'[' Exp ']'`<br />`ConstArraySubSeq '[' Exp ']'`            |
-| 数组下标列表     | `ArraySubSeq`      | `epsilon`<br />`ArraySubSeq '[' Exp ']'`                     |
+| 数组下标列表     | `ArraySubSeq`      | `'[' Exp ']'`<br />`ArraySubSeq '[' Exp ']'`                 |
 | 常量初值         | `ConstInitVal`     | `Exp`<br />`'{' ConstInitValSeq '}'`<br />`'{' '}'`          |
 | 常量初值列表     | `ConstInitValSeq`  | `ConstInitVal`<br />`ConstInitValSeq ',' ConstInitVal`       |
 | 变量声明         | `VarDecl`          | `BType VarDefSeq ';'`                                        |
