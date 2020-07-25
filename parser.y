@@ -1,7 +1,7 @@
 /*
  * @Date: 2020-06-13 17:07:18
  * @LastEditors: zyk
- * @LastEditTime: 2020-07-25 02:24:50
+ * @LastEditTime: 2020-07-25 14:35:01
  * @FilePath: /compiler/parser.y
  */ 
 
@@ -14,6 +14,7 @@
     #include"Nonterminals.h"
     #include"ScopeStack.h"
     #include"ArrayInfo.h"
+    #include"SymbolTable.h"
     
     int yylex();
     void yyerror(const char* fmt, ...);
@@ -223,7 +224,8 @@ ConstInitVal:
     Exp {
     $$ = CreateGrammarTree(ConstInitVal, 1, $1);
     // 计算Exp的值 这里的Exp需要能在编译时就求出值
-    GetExpValue();
+    
+    // 
 }
 |   '{' ConstInitValSeq '}' {
     $$ = CreateGrammarTree(ConstInitVal, 1, $2);
@@ -465,6 +467,9 @@ Exp:
 LVal:
     T_Identifier ArraySubSeq {
     $$ = CreateGrammarTree(LVal, 2, $1, $2);
+}
+|   T_Identifier {
+    $$ = CreateGrammarTree(LVal, 1, $1);
 }
 ;
 
