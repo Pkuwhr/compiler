@@ -1,47 +1,62 @@
 /*
  * @Date: 2020-06-13 17:07:18
  * @LastEditors: zyk
- * @LastEditTime: 2020-07-25 10:24:21
+ * @LastEditTime: 2020-07-25 12:45:10
  * @FilePath: /compiler/GrammarTree.h
  */
 
 #ifndef _GRAMMARTREE_H
 #define _GRAMMARTREE_H
 
-#define MAXSTRING 36
-#define VOIDLINE -1
-
 #include <cstdarg>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 
-#include "SymbolTable.h"
 #include "ArrayInfo.h"
+#include "SymbolTable.h"
 
 using namespace std;
 
-
 typedef struct GrammarTreeNode {
+  //---------------
+  // Grammar info
+  //---------------
   int line; // the number of its line
   int type; // bison自动生成的枚举常量，标记终结符/非终结符类型
   struct GrammarTreeNode *lchild; // lchild指向孩子节点
   struct GrammarTreeNode *rchild; // rchild指向兄弟节点
   union                           // the value of this grammar unit
   {
-    char *string_value;
-    int int_value; // 用于IntConstant或Exp
+    char *string_value; // 用于StringConstant
+    int int_value;      // 用于IntConstant
   };
+
+  //---------------
+  // semantic info
+  //---------------
+
+  // processing Expr
+  bool is_constant_expr; // 若某Expr的子节点均为constant 则其本身也是constant
+  int expr_value; // constant表达式的值可以在自底向上的语法分析中直接求出
   union {
-    // ! 语义分析时节点可能具有的类型
-    // TODO: 还缺少Expr类型
+    // 语义分析时节点可能具有的类型
+    // scope vector
     LocalScope *local_scope;
     FormalScope *formal_scope;
     GlobalScope *global_scope;
+    // scope entry (one line in vector)
     LocalScopeEntry *local_entry;
     FormalScopeEntry *formal_entry;
     GlobalScopeEntry *global_entry;
+
+    // used by ConstDef/VarDef
     ArrayInfo *array_info;
+    // used by (const)ArraySubSeq
+    vector<int> *dims;
+    // used by (const)InitVal. when there is only one exp,
+    // the int will be returned in vector too
+    vector<ArrayInitValue> *array_init_value;
   };
 } GrammarTreeNode;
 
