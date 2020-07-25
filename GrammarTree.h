@@ -1,7 +1,7 @@
 /*
  * @Date: 2020-06-13 17:07:18
  * @LastEditors: zyk
- * @LastEditTime: 2020-07-25 12:45:10
+ * @LastEditTime: 2020-07-25 13:55:00
  * @FilePath: /compiler/GrammarTree.h
  */
 
@@ -37,6 +37,7 @@ typedef struct GrammarTreeNode {
   //---------------
 
   // processing Expr
+  bool isVisited; // for debug
   bool is_constant_expr; // 若某Expr的子节点均为constant 则其本身也是constant
   int expr_value; // constant表达式的值可以在自底向上的语法分析中直接求出
   union {
