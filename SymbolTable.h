@@ -1,8 +1,8 @@
 /*
  * @Date: 2020-07-01 12:45:00
  * @LastEditors: zyk
- * @LastEditTime: 2020-07-26 20:12:15
- * @FilePath: /compiler/SymbolTable.h
+ * @LastEditTime: 2020-07-26 12:34:05
+ * @FilePath: \compiler\SymbolTable.h
  */
 
 #ifndef _SYMBOLTABLE_H
@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "ArrayInfo.h"
-#include "SysYCategory.h"
 
 using namespace std;
 
