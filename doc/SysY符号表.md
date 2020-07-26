@@ -1,5 +1,7 @@
 # `SysY`符号表
 
+[toc]
+
 > ### `SysY`语言定义
 >
 > 1. 每个源文件中**有且仅有**一个名为`main`的主函数定义
@@ -139,27 +141,27 @@
 
 1. **Global**作用域符号表
 
-| 名字: char* | 类别: Symbol Category        | 返回类型: Return Category | 附加类型: union                                              | 函数形参域: FormalScope        | 函数体域: LocalScope           |
-| ----------- | ---------------------------- | ------------------------- | ------------------------------------------------------------ | ------------------------------ | ------------------------------ |
-| name        | Variable/ Constant/ Function | Void, Integer             | const int - 初始值(int)<br />array - 数组初始值和维度信息(struct)<br />func: 存储形参个数(int) | func: pointer<br />other: null | func: pointer<br />other: null |
+| 名字: char* | 类别: bool | 返回类型: bool | 附加类型: union                                      | 函数形参域: FormalScope        | 函数体域: LocalScope           |
+| ----------- | ---------- | -------------- | ---------------------------------------------------- | ------------------------------ | ------------------------------ |
+| name        | isFunction | isVoid         | variable: ArrayInfo<br />function: 存储形参个数(int) | func: pointer<br />other: null | func: pointer<br />other: null |
 
-2. 数组信息使用一个结构表示，单独封装。
-
-
+2. 数组信息使用一个结构`ArrayInfo`表示，单独封装。
 
 3. 函数**Formal**作用域符号表
 
-| 形参名字: char* | 形参类型: Symbol Category |
-| --------------- | ------------------------- |
-| @+name          | VarInt / VarArray         |
-
-
+| 形参名字: char* | 形参类型: bool | 数组信息: ArrayInfo |
+| --------------- | -------------- | ------------------- |
+| @+name          | isArray        | array_info          |
 
 4. 函数体/语句块**Local**作用域符号表
 
-| 名字: char* | 类别: Symbol Category                         | 附加信息   | 内嵌域列表: LocalScope          |
-| ----------- | --------------------------------------------- | ---------- | ------------------------------- |
-| name        | VarArray, ConstArray, VarInt, ConstInt, Block | 常量初始值 | Block: pointer<br />other: null |
+由于文法的限制，`isArray`和`isConst`只能在不同阶段获取。
+
+常量定义时，添加**name/isArray/ArrayInfo**信息（注意`int`类型的初值也存在`ArrayInfo`中），处理到`ConstDecl`/`VarDecl`时，为其添加`isConst`信息。
+
+| 名字: char* | 是否常量: bool | 是否数组: bool | 是否Block: bool | 附加信息: ArrayInfo* | 内嵌域列表: LocalScope*                |
+| ----------- | -------------- | -------------- | --------------- | -------------------- | -------------------------------------- |
+| name        | isConst        | isArray        | isBlock         | 常量/数组初始值      | **Block**: pointer<br />Other: nullptr |
 
 遇到内嵌域（比如`for`循环里的`Block`）时，类别置为`Block`，内嵌列表指针指向子作用域符号表。
 
@@ -167,8 +169,9 @@
 
 ### 数组维度及初值的存储
 
-// 待补充
+待补充
 
 ### 库函数调用的处理
 
-在初始化Global符号表时，插入库函数对应信息。
+- 词法分析时单独处理函数名
+- 在初始化Global符号表时，插入库函数对应信息

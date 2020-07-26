@@ -1,7 +1,7 @@
 /*
  * @Date: 2020-06-13 17:07:18
  * @LastEditors: zyk
- * @LastEditTime: 2020-07-25 13:55:00
+ * @LastEditTime: 2020-07-26 16:41:32
  * @FilePath: /compiler/GrammarTree.h
  */
 
@@ -52,9 +52,10 @@ typedef struct GrammarTreeNode {
     GlobalScopeEntry *global_entry;
 
     // used by ConstDef/VarDef
-    ArrayInfo *array_info;
+    // ArrayInfo *array_info;
     // used by (const)ArraySubSeq
     vector<int> *dims;
+    vector<GrammarTree> exprs;
     // used by (const)InitVal. when there is only one exp,
     // the int will be returned in vector too
     vector<ArrayInitValue> *array_init_value;

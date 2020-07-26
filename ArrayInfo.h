@@ -1,7 +1,7 @@
 /*
  * @Date: 2020-07-15 16:06:28
  * @LastEditors: zyk
- * @LastEditTime: 2020-07-25 10:23:52
+ * @LastEditTime: 2020-07-26 16:43:12
  * @FilePath: /compiler/ArrayInfo.h
  */ 
 
@@ -18,20 +18,22 @@
 using namespace std;
 
 typedef struct ArrayInitValue {
-    int *values; // 动态创建数组存储初值
-    // TODO: 此数组初值的存储可能仍需要修改
-
-    bool init(vector<int> dims, int **pvalues); // 输入维度 创建数组
+    bool isSeparator; // 每当遇到一个'}'时 添加一个Separator到vector中
+    int value; // 遇到正常数字时 添加其到vector中
 } ArrayInitValue;
 
 typedef struct ArrayInfo {
+    int const_init_value; // 常量初值
+    GrammarTree var_init_value; // 变量初值
     vector<int> dims; // 数组维度向量
-    vector<GrammarTree*> exprs; // 运行时计算的表达式
-
-    // - 数组初值 -
-    // * 使用时需要先分配空间
-    // * 对于没有初值的数组 默认为Null
-    struct ArrayInitValue *init_value;
+    vector<GrammarTree> exprs; // 运行时计算的表达式
+    vector<ArrayInitValue> init_values; // 含分隔符的数组初值
 } ArrayInfo;
+
+// 把init_val中的值附在seq后
+void MergeInitValIntoSeq(vector<ArrayInitValue> &init_val, vector<ArrayInitValue> &seq);
+vector<ArrayInitValue> *NewInitValFromExp(GrammarTree exp);
+void PushSeparator(vector<ArrayInitValue> *init_val);
+
 
 #endif
