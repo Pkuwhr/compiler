@@ -53,7 +53,7 @@ GlobalScope *AddLocalIntoGlobal(GlobalScope *global_scope,
                                 LocalScope *local_scope);
 // 把local_scope放入另一个local_scope中
 // ! 注意head为Null的情况 !
-LocalScope *AddLocalIntoLocal(LocalScope *head, LoaclScope *tail);
+LocalScope *AddLocalIntoLocal(LocalScope *head, LocalScope *tail);
 // 把entry放入scope中 且返回加入后的scope指针
 // ! 若scope = nullptr 则需要创建一个scope !
 GlobalScope *AddEntryIntoGlobalScope(GlobalScope *scope,
