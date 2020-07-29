@@ -1,7 +1,7 @@
 /*
  * @Date: 2020-07-01 12:45:00
  * @LastEditors: zyk
- * @LastEditTime: 2020-07-26 12:34:05
+ * @LastEditTime: 2020-07-29 21:00:24
  * @FilePath: \compiler\SymbolTable.h
  */
 
@@ -12,9 +12,11 @@
 #include <iostream>
 #include <vector>
 
-#include "ArrayInfo.h"
-
 using namespace std;
+
+struct ArrayInitVal;
+struct ArrayInfo;
+struct GrammarTreeNode;
 
 // 局部作用域符号表
 typedef struct LocalScopeEntry {
@@ -68,21 +70,21 @@ vector<int> *AddIntoDimsVector(vector<int> *dims, int d);
 vector<int> *AddIntoExprsVector(vector<int> *exprs, int e);
 // 把ArrayInitValue加入到vector中 若 init = null 则需要新建一个vector
 // add_sep = true时 添加value后 继续添加一个sep
-vector<ArrayInitValue> *AddExprIntoArrayInitValue(vector<ArrayInitValue> *init,
+vector<ArrayInitVal *> *AddExprIntoArrayInitValue(vector<ArrayInitVal *> *init,
                                                   int value, bool add_sep);
 // 把tail中的元素连接到head后面 head tail都可以为Null
 // ! 连接之后务必加上一个sep分隔符 !
-vector<ArrayInitValue> *MergeArrayInitValue(vector<ArrayInitValue> *head,
-                                            vector<ArrayInitValue> *tail);
+vector<ArrayInitVal *> *MergeArrayInitValue(vector<ArrayInitVal *> *head,
+                                            vector<ArrayInitVal *> *tail);
 // 为local_scope中的entry设置统一的isConst标记
 // 返回添加好的scope指针
 LocalScope *AttachTypeToLocalScope(LocalScope *local_scope, bool is_const);
 
 // 组装一个ArrayInfo 返回其地址
-ArrayInfo *NewArrayInfo(vector<int> *_dims, vector<GrammarTree> *_exprs,
-                        vector<ArrayInitValue> *_init_values);
+ArrayInfo *NewArrayInfo(vector<int> *_dims, vector<GrammarTreeNode *> *_exprs,
+                        vector<ArrayInitVal *> *_init_values);
 // 新建一个ArrayInfo 只存储初值 其它字段置为null
-ArrayInfo *NewInitValue(bool is_const, int const_value, GrammarTree var_value);
+ArrayInfo *NewInitValue(bool is_const, int const_value, GrammarTreeNode *var_value);
 // 新建一个local_entry
 LocalScopeEntry *NewLocalEntry(char *_name, bool _is_array, bool _is_block,
                                ArrayInfo *_array_info, LocalScope *local_scope);

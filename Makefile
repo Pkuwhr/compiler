@@ -32,24 +32,30 @@ WDELOBJ = $(SRC:$(SRCDIR)/%$(EXT)=$(OBJDIR)\\%.o)
 all: $(APPNAME)
 
 # Builds the app
-$(APPNAME): $(OBJ)
+$(APPNAME): $(OBJ) parser.tab.o lex.yy.o
 	$(CC) $(CXXFLAGS) -o $@ parser.tab.o lex.yy.o $^ $(LDFLAGS) # ! Add lex.yy.o and parser.tab.o
 
 # Creates the dependecy rules
 %.d: $(SRCDIR)/%$(EXT)
 	@$(CPP) $(CFLAGS) $< -MM -MT $(@:%.d=$(OBJDIR)/%.o) >$@
 
+# Building rule for yacc and lex files
+lex.yy.c: parser.tab.c parser.tab.h
+	flex -L scanner.l
+
+parser.tab.c, parser.tab.h:
+	bison -dvt parser.y
+
+parser.tab.o, lex.yy.o: parser.tab.c parser.tab.h lex.yy.c
+	# ! Compile yacc and lex files
+	g++ -Wall -Wno-unused -Wno-sign-compare -c parser.tab.c
+	g++ -Wall -Wno-unused -Wno-sign-compare -c lex.yy.c
+
 # Includes all .h files
 -include $(DEP)
 
 # Building rule for .o files and its .c/.cpp in combination with all .h
-$(OBJDIR)/%.o: $(SRCDIR)/%$(EXT) parser.y scanner.l
-	# ! Compile yacc and lex files
-	bison -dvt parser.y
-	g++ -Wall -Wno-unused -Wno-sign-compare -c parser.tab.c
-	flex -L scanner.l
-	g++ -Wall -Wno-unused -Wno-sign-compare -c lex.yy.c
-	# origin lines
+$(OBJDIR)/%.o: $(SRCDIR)/%$(EXT) parser.tab.h
 	$(CC) $(CXXFLAGS) -o $@ -c $<
 
 ################### Cleaning rules for Unix-based OS ###################

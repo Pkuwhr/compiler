@@ -1,11 +1,12 @@
 /*
  * @Date: 2020-07-15 14:59:31
  * @LastEditors: zyk
- * @LastEditTime: 2020-07-25 10:36:58
- * @FilePath: /compiler/SymbolTable.cpp
+ * @LastEditTime: 2020-07-29 21:05:17
+ * @FilePath: \compiler\SymbolTable.cpp
  */ 
 
 #include"SymbolTable.h"
+#include"ArrayInfo.h"
 
 // 把local_scope中的entry填入global_scope中 注意**local_scope中不能有Block**
 GlobalScope *AddLocalIntoGlobal(GlobalScope *global_scope,LocalScope *local_scope) {
@@ -91,8 +92,8 @@ vector<int> *AddIntoExprsVector(vector<int> *exprs, int e) {
 // add_sep = true时 添加value后 继续添加一个sep
 vector<ArrayInitValue> *AddExprIntoArrayInitValue(vector<ArrayInitValue> *init,int value, bool add_sep) {
     ArrayInitValue tmp;
-    tmp.isSeparator=add_sep;
-    tmp.value = value;
+    tmp->isSeparator=add_sep;
+    tmp->value = value;
     init->push_back(tmp);
     return init;
 }
@@ -106,7 +107,7 @@ vector<ArrayInitValue> *MergeArrayInitValue(vector<ArrayInitValue> *head,vector<
     }
     // 加上sep
     ArrayInitValue last;
-    last.isSeparator=true;
+    last->isSeparator=true;
     head->push_back(last);
     return head;
 }

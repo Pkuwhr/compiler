@@ -1,8 +1,8 @@
 /*
  * @Date: 2020-06-13 17:07:18
  * @LastEditors: zyk
- * @LastEditTime: 2020-07-26 16:41:32
- * @FilePath: /compiler/GrammarTree.h
+ * @LastEditTime: 2020-07-29 21:00:52
+ * @FilePath: \compiler\GrammarTree.h
  */
 
 #ifndef _GRAMMARTREE_H
@@ -13,10 +13,11 @@
 #include <cstdlib>
 #include <cstring>
 
-#include "ArrayInfo.h"
 #include "SymbolTable.h"
 
 using namespace std;
+
+struct ArrayInitVal;
 
 typedef struct GrammarTreeNode {
   //---------------
@@ -55,10 +56,10 @@ typedef struct GrammarTreeNode {
     // ArrayInfo *array_info;
     // used by (const)ArraySubSeq
     vector<int> *dims;
-    vector<GrammarTree> exprs;
+    vector<GrammarTreeNode *> exprs;
     // used by (const)InitVal. when there is only one exp,
     // the int will be returned in vector too
-    vector<ArrayInitValue> *array_init_value;
+    vector<ArrayInitVal *> *array_init_value;
   };
 } GrammarTreeNode;
 

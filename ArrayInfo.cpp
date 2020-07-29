@@ -1,7 +1,7 @@
 /*
  * @Date: 2020-07-15 16:10:45
  * @LastEditors: zyk
- * @LastEditTime: 2020-07-27 23:18:32
+ * @LastEditTime: 2020-07-29 21:02:58
  * @FilePath: \compiler\ArrayInfo.cpp
  */
 
@@ -11,7 +11,7 @@ int ArrayInfo::size() { return this->dims.size(); }
 
 // 判断index是否能被factors中的某个数整除
 bool isLastElement(int index, vector<int> &factors) {
-  for (vector<int>::iterator it = factors.front(); it != factors.end(); it++) {
+  for (vector<int>::iterator it = factors.begin(); it != factors.end(); it++) {
     if (index % *it == 0)
       return true;
   }
@@ -19,41 +19,42 @@ bool isLastElement(int index, vector<int> &factors) {
 }
 
 int ArrayInfo::getInt(vector<int> &index) {
-  assert(index.size() == dims.size());
+  return 0;
+  // assert(index.size() == dims.size());
 
-  int linear_idx = 0;
+  // int linear_idx = 0;
 
-  vector<int> factors;
-  factors.clear();
+  // vector<int> factors;
+  // factors.clear();
   
-  // calculate the linear idx of target
-  for (int i = 0; i < index.size(); i++) {
-    int factor = 1;
-    for (int j = i + 1; j < dims.size(); j++) {
-      factor *= dims[j];
-    }
-    factors.push_back(factor);
-    linear_idx += index[i] * factor;
-  }
+  // // calculate the linear idx of target
+  // for (int i = 0; i < index.size(); i++) {
+  //   int factor = 1;
+  //   for (int j = i + 1; j < dims.size(); j++) {
+  //     factor *= dims[j];
+  //   }
+  //   factors.push_back(factor);
+  //   linear_idx += index[i] * factor;
+  // }
 
-  int pointer = 0; // 当前处理到的位置
-  int real_idx = 0; // pointer对应的元素在数组中实际的位置 real_idx <= pointer
-  int result = 0; // 所求位置元素的值
+  // int pointer = 0; // 当前处理到的位置
+  // int real_idx = 0; // pointer对应的元素在数组中实际的位置 real_idx <= pointer
+  // int result = 0; // 所求位置元素的值
 
-  while (real_idx < linear_idx) {
-    if (!init_values[pointer]->isSeparator) {
-      real_idx++;
-      result = init_values[pointer];
-    } else {
-      while (!isLastElement(real_idx, factors)) {
-        real_idx += 1; // TODO: 这里可以优化 real_idx每次增加到
-        result = 0;
-      }
-    }
-    pointer++;
-  }
+  // while (real_idx < linear_idx) {
+  //   if (!init_values[pointer]->isSeparator) {
+  //     real_idx++;
+  //     result = init_values[pointer];
+  //   } else {
+  //     while (!isLastElement(real_idx, factors)) {
+  //       real_idx += 1; // TODO: 这里可以优化 real_idx每次增加到
+  //       result = 0;
+  //     }
+  //   }
+  //   pointer++;
+  // }
 
-  return result;
+  // return result;
 }
 
 // TODO

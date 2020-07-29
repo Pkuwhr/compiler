@@ -1,8 +1,8 @@
 /*
  * @Date: 2020-06-13 17:07:18
  * @LastEditors: zyk
- * @LastEditTime: 2020-07-26 20:09:47
- * @FilePath: /compiler/parser.y
+ * @LastEditTime: 2020-07-29 20:46:42
+ * @FilePath: \compiler\parser.y
  */ 
 
 
@@ -341,7 +341,7 @@ FuncFParams: // FormalScope
 }
 |   FuncFParams ',' FuncFParam {
     $$ = CreateGrammarTree(FuncFParams, 2, $1, $3);
-    $$->formal_scope = AddEntryIntoFormalScope($1->formal_scope, $2->formal_entry);
+    $$->formal_scope = AddEntryIntoFormalScope($1->formal_scope, $3->formal_entry);
 }
 ;
 
