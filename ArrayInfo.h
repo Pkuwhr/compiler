@@ -1,7 +1,7 @@
 /*
  * @Date: 2020-07-15 16:06:28
  * @LastEditors: zyk
- * @LastEditTime: 2020-07-26 21:16:59
+ * @LastEditTime: 2020-07-26 21:27:06
  * @FilePath: \compiler\ArrayInfo.h
  */
 
@@ -42,7 +42,8 @@ typedef struct ArrayInfo {
    * 则输入[1, 2]这个vector output: int: 数组对应位置的元素
    * 若index.size()<dims.size() 则返回结果**未定义**
    */
-  int get(vector<int> &index);
+  int getInt(vector<int> &index);
+  GrammarTree getExpr(vector<int> &index);
 
 } ArrayInfo;
 
