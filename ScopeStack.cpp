@@ -6,30 +6,30 @@
  */
 #include "ScopeStack.h"
 
-void InitScopeStack(ScopeStack &stack) { stack.clear(); }
+void InitScopeStack(ScopeStack *stack) { stack->clear(); }
 
-void DestroyScopeStack(ScopeStack &stack) { stack.clear(); }
+void DestroyScopeStack(ScopeStack *stack) { stack->clear(); }
 
-int ScopeStackLength(ScopeStack &stack) { return stack.size(); }
+int ScopeStackLength(ScopeStack *stack) { return stack->size(); }
 
-void ScopeStackPush(ScopeStack &stack, Scope scope) { stack.push_back(scope); }
+void ScopeStackPush(ScopeStack *stack, Scope scope) { stack->push_back(scope); }
 
-Scope &ScopeStackPop(ScopeStack &stack) {
-  Scope &top = stack.at(stack.size() - 1);
-  stack.pop_back();
+Scope &ScopeStackPop(ScopeStack *stack) {
+  Scope &top = stack->at(stack->size() - 1);
+  stack->pop_back();
   return top;
 }
 
-Scope &GetStackTop(ScopeStack &stack) { return stack.at(stack.size() - 1); }
+Scope &GetStackTop(ScopeStack *stack) { return stack->at(stack->size() - 1); }
 
-ScopeEntry TraverseScopeStack(ScopeStack &stack, char *name) {
+ScopeEntry TraverseScopeStack(ScopeStack *stack, char *name) {
   // traverse the stack and find certain name
   ScopeEntry result;
   LocalScope *local_symtable;
   FormalScope *formal_symtable;
   GlobalScope *global_symtable;
 
-  for (ScopeStack::iterator it = stack.end(); it != stack.begin(); it--) {
+  for (ScopeStack::iterator it = stack->end(); it != stack->begin(); it--) {
     switch (it->type) {
     case ScopeLocal:
       local_symtable = it->local;
@@ -75,7 +75,7 @@ ScopeEntry TraverseScopeStack(ScopeStack &stack, char *name) {
 }
 
 // check if given root is a constant expr
-void CheckExprValue(GrammarTree tree, ScopeStack &stack) {
+void CheckExprValue(GrammarTree tree, ScopeStack *stack) {
   assert(tree->type == Exp);
   if (!tree)
     return;
@@ -218,7 +218,7 @@ void CheckExprValue(GrammarTree tree, ScopeStack &stack) {
   return;
 }
 
-void ScopeTrial(GrammarTree tree, Scope scope, ScopeStack &stack) {
+void ScopeTrial(GrammarTree tree, Scope scope, ScopeStack *stack) {
   // TODO: traverse the tree and calculate semantic fault
   string PASS = "[Pass]";
   if (!tree)
