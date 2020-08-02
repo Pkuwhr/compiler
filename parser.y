@@ -100,7 +100,7 @@ Program : CompUnit { // GlobalScope
     {
         printf("\nNow print the symbol tables of \"Semantic Analyzing\":\n");
         printf("__________________________________________________\n\n"); 
-        DisplayGlobalScope($1->global_scope, "Program"); // TODO: impl this
+        // DisplayGlobalScope($1->global_scope, "Program"); // TODO: impl this
         printf("__________________________________________________\n\n"); 
         printf("The symbol tables of \"Semantic Analyzing\" is printed!\n\n"); 
     }
@@ -177,15 +177,15 @@ ConstDef: // LocalScopeEntry
     T_Identifier '=' ConstInitVal {
     $$ = CreateGrammarTree(ConstDef, 2, $1, $3);
     // 新建一个LocalScopeEntry
-    $$->local_entry = NewLocalIntEntry($1->string_value, false, false, NewInitValue($3->int_value), NULL);
+    // $$->local_entry = NewLocalIntEntry($1->string_value, false, false, NewInitValue($3->int_value), NULL); // FIXME
 }
 |   T_Identifier ConstArraySubSeq '=' ConstInitVal {
     $$ = CreateGrammarTree(ConstDef, 3, $1, $2, $4);
-    // 新建一个LocalScopeEntry
-    $$->local_entry = NewLocalArrayEntry($1->string_value, 
-                                         true, false, 
-                                         NewArrayInfo($2->dims, NULL, $4->array_init_value), 
-                                         NULL);
+    // 新建一个LocalScopeEntry FIXME
+    // $$->local_entry = NewLocalArrayEntry($1->string_value, 
+    //                                      true, false, 
+    //                                      NewArrayInfo($2->dims, NULL, $4->array_init_value), 
+    //                                      NULL);
 }
 ;
 
@@ -215,12 +215,12 @@ ArraySubSeq: // exprs
     '[' Exp ']' {
     $$ = CreateGrammarTree(ArraySubSeq, 0, -1);
     // 新建一个空的选择符
-    $$->exprs = AddIntoExprsVector($$->exprs, $2);
+    // $$->exprs = AddIntoExprsVector($$->exprs, $2); FIXME
 }
 | ArraySubSeq '[' Exp ']' {
     $$ = CreateGrammarTree(ArraySubSeq, 2, $1, $3);
     // 将Exp对应的值放在选择符中
-    $$->exprs = AddIntoExprsVector($1->exprs, $3);
+    // $$->exprs = AddIntoExprsVector($1->exprs, $3); FIXME
 }
 ;
 
@@ -286,14 +286,14 @@ VarDef: // LocalScopeEntry
 }
 |   T_Identifier '=' InitVal {
     $$ = CreateGrammarTree(VarDef, 2, $1, $3);
-    if ($3->child->type != Exp) {
+    if ($3->lchild->type != Exp) { //　FIXME
         yyerror("Line %d: InitVal must be Exp type!\n", yylineno);
     }
     $$->local_entry = NewLocalEntry($1->string_value, false, false, NewInitValue(false, 0, $3->lchild), NULL);
 } 
 |   T_Identifier ConstArraySubSeq '=' InitVal {
     $$ = CreateGrammarTree(VarDef, 3, $1, $2, $4);
-    $$->local_entry = NewLocalEntry($1->string_value, true, false, NewArrayInfo($2->dims, $4->exprs, NULL), NULL);
+    // $$->local_entry = NewLocalEntry($1->string_value, true, false, NewArrayInfo($2->dims, $4->exprs, NULL), NULL); FIXME
 }
 ;
 
@@ -341,7 +341,8 @@ FuncFParams: // FormalScope
 }
 |   FuncFParams ',' FuncFParam {
     $$ = CreateGrammarTree(FuncFParams, 2, $1, $3);
-    $$->formal_scope = AddEntryIntoFormalScope($1->formal_scope, $2->formal_entry);
+    // FIXME
+    // $$->formal_scope = AddEntryIntoFormalScope($1->formal_scope, $2->formal_entry);
 }
 ;
 
@@ -404,7 +405,7 @@ BlockItem: // LocalScope
     }
     // 3. Stmt -> T_If '(' Exp ')' Stmt T_Else Stmt
     else if ($$->lchild->type == T_If &&
-             $$->lchild->rchild->rchild->rchild == T_Else) {
+             $$->lchild->rchild->rchild->rchild->type == T_Else) { //FIXME
         // add 2 entries
         LocalScopeEntry *if_blk = NewLocalEntry(NULL, false, true, NULL, $$->lchild->rchild->rchild->lchild->local_scope);
         LocalScopeEntry *else_blk = NewLocalEntry(NULL, false, true, NULL, $$->lchild->rchild->rchild->rchild->rchild->lchild->local_scope);
