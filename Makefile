@@ -18,7 +18,7 @@ SRC = $(wildcard $(SRCDIR)/*$(EXT))
 OBJ = $(SRC:$(SRCDIR)/%$(EXT)=$(OBJDIR)/%.o)
 DEP = $(OBJ:$(OBJDIR)/%.o=%.d)
 # UNIX-based OS variables & settings
-RM = rm
+RM = rm -f
 DELOBJ = $(OBJ)
 # Windows OS variables & settings
 DEL = del
