@@ -33,7 +33,7 @@ all: $(APPNAME)
 
 # Builds the app
 $(APPNAME): $(OBJ) parser.tab.o lex.yy.o
-	$(CC) $(CXXFLAGS) -o $@ parser.tab.o lex.yy.o $^ $(LDFLAGS) # ! Add lex.yy.o and parser.tab.o
+	$(CC) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
 
 # Creates the dependecy rules
 %.d: $(SRCDIR)/%$(EXT)
@@ -64,8 +64,8 @@ $(OBJDIR)/%.o: $(SRCDIR)/%$(EXT) parser.tab.h
 clean:
 	$(RM) $(DELOBJ) $(DEP) $(APPNAME)
 	# ! rm *.tab.c *.tab.h and lex.yy.c
-	$(RM) parser.tab.c parser.tab.h parser.output
-	$(RM) lex.yy.c
+	$(RM) parser.tab.c parser.tab.h parser.output parser.tab.o
+	$(RM) lex.yy.c lex.yy.o
 
 # Cleans only all files with the extension .d
 .PHONY: cleandep
