@@ -4,6 +4,8 @@
  * @LastEditTime: 2020-07-15 21:22:28
  * @FilePath: /compiler/Nonterminals.c
  */
+
+
 #include"Nonterminals.h"
 #include"GrammarTree.h"
 extern "C" {
@@ -11,7 +13,7 @@ extern "C" {
 }
 
 
-char *NameOf(int type) {
+string NameOf(int type) {
     switch (type) {
         case Program:
             return "Program";

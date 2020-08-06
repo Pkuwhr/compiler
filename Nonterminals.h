@@ -4,8 +4,14 @@
  * @LastEditTime: 2020-06-15 20:53:49
  * @FilePath: \compiler\Nonterminals.h
  */
+
+
 #ifndef _NONTERMINALS_H
 #define _NONTERMINALS_H
+
+#include <string>
+
+using namespace std;
 
 enum yyntermtype {
     Program = 1000,
@@ -48,6 +54,6 @@ enum yyntermtype {
     LAndExp
 };
 
-char *NameOf(int type);
+string NameOf(int type);
 
 #endif
