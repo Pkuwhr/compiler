@@ -4,6 +4,7 @@ CMakeLists.txt
 
 *.o
 *.output
-y.tab.*
+parser.tab.*
 lex.yy.*
 compiler
+*.d
