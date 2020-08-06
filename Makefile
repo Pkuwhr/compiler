@@ -4,7 +4,7 @@
 
 # Compiler settings - Can be customized.
 CC = g++
-CXXFLAGS = -std=c++11 -Wall
+CXXFLAGS = -std=c++11 -Wall -Wno-unused -Wno-sign-compare -g
 LDFLAGS = -lc -lm -ll
 
 # Makefile settings - Can be customized.
@@ -48,8 +48,8 @@ parser.tab.c, parser.tab.h:
 
 parser.tab.o, lex.yy.o: parser.tab.c parser.tab.h lex.yy.c
 	# ! Compile yacc and lex files
-	g++ -Wall -Wno-unused -Wno-sign-compare -c parser.tab.c
-	g++ -Wall -Wno-unused -Wno-sign-compare -c lex.yy.c
+	$(CC) -Wall -Wno-unused -Wno-sign-compare -c -g parser.tab.c
+	$(CC) -Wall -Wno-unused -Wno-sign-compare -c -g lex.yy.c
 
 # Includes all .h files
 -include $(DEP)
