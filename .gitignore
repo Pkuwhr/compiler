@@ -2,9 +2,11 @@ cmake-build-debug/
 CMakeLists.txt
 .idea/
 
+*.d
 *.o
 *.output
 parser.tab.*
 lex.yy.*
 compiler
-*.d
+
+test.sy
