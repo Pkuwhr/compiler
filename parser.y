@@ -24,7 +24,7 @@
     extern int gmerror;
     extern int yylineno;
 
-    ScopeStack* stack;
+    ScopeStack stack;
 %}
 
 %define parse.error verbose
@@ -86,14 +86,14 @@ Program : CompUnit { // GlobalScope
     }
     // 把CompUnit的GlobalScope作为Program的GlobalScope
     $$->global_scope = $1->global_scope;
-    InitScopeStack(stack);
+    InitScopeStack(&stack);
     Scope scope;
     scope.type = ScopeGlobal;
     scope.global = $$->global_scope;
     // 若semantic_check开启 则执行ScopeTrial进行静态语义检查
     if (semantic_check) 
     {
-        ScopeTrial($$, scope, stack);
+        ScopeTrial($$, scope, &stack);
     }
     // 没有语义错误时 打印符号表
     if (!smerror)
@@ -193,7 +193,7 @@ ConstArraySubSeq: // dims
     '[' Exp ']' {
     $$ = CreateGrammarTree(ConstArraySubSeq, 1, $2);
     // 此为第一维的大小
-    CheckExprValue($2, stack);
+    CheckExprValue($2, &stack);
     if (!$2->is_constant_expr) {
         yyerror("Line %d: ConstExp needed!", yylineno);
     }
@@ -201,7 +201,7 @@ ConstArraySubSeq: // dims
 }
 | ConstArraySubSeq '[' Exp ']' {
     $$ = CreateGrammarTree(ConstArraySubSeq, 2, $1, $3);
-    CheckExprValue($3, stack);
+    CheckExprValue($3, &stack);
     if (!$3->is_constant_expr) {
         yyerror("Line %d: ConstExp needed!", yylineno);
     }
@@ -228,7 +228,7 @@ ConstInitVal: // array_init_value
     Exp {
     $$ = CreateGrammarTree(ConstInitVal, 1, $1);
     // 计算Exp的值 这里的Exp需要能在编译时就求出值
-    CheckExprValue($1, stack);
+    CheckExprValue($1, &stack);
     if (!$1->is_constant_expr) {
         yyerror("Line %d: ConstExp needed!\n", yylineno);
     }
@@ -417,6 +417,11 @@ BlockItem: // LocalScope
         // add 1 entry
         LocalScopeEntry *while_blk = NewLocalEntry(NULL, false, true, NULL, $$->lchild->rchild->rchild->lchild->local_scope);
         $$->local_scope = AddEntryIntoLocalScope($$->local_scope, while_blk);
+    }
+    // 5. others
+    else {
+        // add no entry
+        $$->local_scope = NULL;
     }
 }
 ;

@@ -35,9 +35,16 @@ GlobalScope *AddLocalIntoGlobal(GlobalScope *global_scope,LocalScope *local_scop
 // 把local_scope放入另一个local_scope中
 // ! 注意head为Null的情况 !
 LocalScope *AddLocalIntoLocal(LocalScope *head, LocalScope *tail) {
-    if (head == NULL) {
-        head = (LocalScope *) malloc(sizeof(LocalScope));
-    }
+    if (head == nullptr && tail == nullptr)
+        return nullptr;
+
+    else if (head == nullptr)
+        return tail;
+    
+    else if (tail == nullptr)
+        return head;
+
+    // head != null and tail != null
 
     LocalScope::iterator it = tail->begin();
     while (it != tail->end()) {

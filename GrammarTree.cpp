@@ -80,7 +80,7 @@ void TraverseGrammarTree(GrammarTree gmtree, int level) {
             printf("    ");
         if (gmtree->line != -1) {
             // Not void rule
-            printf("%s", NameOf(gmtree->type));
+            cout << NameOf(gmtree->type);
             if (gmtree->type == T_Identifier || gmtree->type == T_StringConstant)
                 printf(": %s\n", gmtree->string_value);
             else if (gmtree->type == T_IntConstant)
