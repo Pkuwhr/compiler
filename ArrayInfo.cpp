@@ -1,87 +1,89 @@
 /*
- * @Date: 2020-07-15 16:10:45
- * @LastEditors: zyk
- * @LastEditTime: 2020-07-29 21:02:58
- * @FilePath: \compiler\ArrayInfo.cpp
+ * File: ArrayInfo.cpp
+ * Project: compiler
+ * File Created: Sunday, 2nd August 2020 7:39:21 pm
+ * Author: zyk
+ * -----
+ * Last Modified: Monday, 10th August 2020 4:20:59 pm
+ * Modified By: zyk
+ * -----
+ * 2020 - HUST
  */
 
 #include "ArrayInfo.h"
 
+// 所有0值共用一个变量
+ArrayInitVal ZERO;
+
 int ArrayInfo::size() { return this->dims.size(); }
 
-// 判断index是否能被factors中的某个数整除
-bool isLastElement(int index, vector<int> &factors) {
-  for (vector<int>::iterator it = factors.begin(); it != factors.end(); it++) {
-    if (index % *it == 0)
-      return true;
+void ArrayInfo::init() {
+  ZERO.type = Value;
+  ZERO.value = 0;
+
+  const int max_layer =
+      size(); // 超过最大层数后 只取{}里的第一个数字 忽略其它数字
+  init_values.clear();
+
+  int cur_layer = 0, left = 1, elem_index = 0;
+  for (vector<int>::iterator it = dims.begin(); it != dims.end(); it++) {
+    left *= *it;
   }
-  return false;
+
+  for (vector<ArrayInitValue>::iterator it = raw_values.begin();
+       it != raw_values.end(); it++) {
+    switch ((*it)->type) {
+    case Begin:
+      cur_layer++;
+
+      // 计算left值 即当前层剩余的变量数
+      if (cur_layer > max_layer) {
+        left = 1;
+      } else {
+        int modulo = 1;
+        for (int i = 1; i <= max_layer - cur_layer + 1; ++i) {
+          modulo *= dims[dims.size() - i];
+        }
+        // modulo为本层变量数
+        // 根据elem_index和modulo计算left
+        left = (elem_index / modulo + 1) * modulo - elem_index;
+      }
+      break;
+    case End:
+      while (left) {
+        init_values.push_back(&ZERO);
+        left--;
+        elem_index++;
+      }
+      cur_layer--;
+      break;
+    case Exp:
+    case Value:
+      if (left) {
+        init_values.push_back(*it);
+        left--;
+        elem_index++;
+      }
+      break;
+    default:
+      break;
+    }
+  }
 }
 
-int ArrayInfo::getInt(vector<int> &index) {
-  return 0;
-  // assert(index.size() == dims.size());
-
-  // int linear_idx = 0;
-
-  // vector<int> factors;
-  // factors.clear();
-  
-  // // calculate the linear idx of target
-  // for (int i = 0; i < index.size(); i++) {
-  //   int factor = 1;
-  //   for (int j = i + 1; j < dims.size(); j++) {
-  //     factor *= dims[j];
-  //   }
-  //   factors.push_back(factor);
-  //   linear_idx += index[i] * factor;
-  // }
-
-  // int pointer = 0; // 当前处理到的位置
-  // int real_idx = 0; // pointer对应的元素在数组中实际的位置 real_idx <= pointer
-  // int result = 0; // 所求位置元素的值
-
-  // while (real_idx < linear_idx) {
-  //   if (!init_values[pointer]->isSeparator) {
-  //     real_idx++;
-  //     result = init_values[pointer];
-  //   } else {
-  //     while (!isLastElement(real_idx, factors)) {
-  //       real_idx += 1; // TODO: 这里可以优化 real_idx每次增加到
-  //       result = 0;
-  //     }
-  //   }
-  //   pointer++;
-  // }
-
-  // return result;
+ArrayInitValue ArrayInfo::get_element(vector<int> indices) {
+  int index = 0;
+  for (int i = 0; i < indices.size(); ++i) {
+    int factor = 1;
+    for (int j = i + 1; j < dims.size(); ++j) {
+      factor *= dims[j];
+    }
+    index += indices[i] * factor;
+  }
+  return init_values[index];
 }
-
-// TODO
-GrammarTree ArrayInfo::getExpr(vector<int> &index) { return nullptr; }
 
 void MergeInitValIntoSeq(vector<ArrayInitValue> &init_val,
-                         vector<ArrayInitValue> &seq) {
-  // append init_val to seq
-  for (vector<ArrayInitValue>::iterator it = init_val.begin();
-       it != init_val.end(); it++) {
-    seq.push_back(*it);
-  }
-}
-
-vector<ArrayInitValue> *NewInitValFromExp(GrammarTree exp) {
-  vector<ArrayInitValue> *rev =
-      (vector<ArrayInitValue> *)malloc(sizeof(vector<ArrayInitValue>));
-  ArrayInitValue val = (ArrayInitValue)malloc(sizeof(ArrayInitValue));
-  val->isSeparator = false;
-  val->expr = exp;
-  rev->push_back(val);
-  
-  return rev;
-}
-
-void PushSeparator(vector<ArrayInitValue> &init_val) {
-  ArrayInitValue sep = (ArrayInitValue)malloc(sizeof(ArrayInitValue));
-  sep->isSeparator = true;
-  init_val.push_back(sep);
-}
+                         vector<ArrayInitValue> &seq) {}
+vector<ArrayInitValue> *NewInitValFromExp(GrammarTree exp) { return nullptr; }
+void PushSeparator(vector<ArrayInitValue> &init_val) {}
