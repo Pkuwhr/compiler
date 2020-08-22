@@ -86,7 +86,7 @@ FormalScope *AddEntryIntoFormalScope(FormalScope *scope, FormalScopeEntry *entry
 LocalScope *AddEntryIntoLocalScope(LocalScope *scope, LocalScopeEntry *entry);
 
 // 为local_scope中的entry设置统一的isConst标记  返回添加好的scope指针
-LocalScope *AttachTypeToLocalScope(LocalScope *scope, bool is_const);
+LocalScope *AttachTypeToLocalScope(LocalScope *scope, bool _is_const);
 
 
 

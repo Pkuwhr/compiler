@@ -322,7 +322,7 @@ FuncDef: // GlobalScopeEntry
     // FormalScope 置为 Null
     // LocalScopeEntry 置为 Block->embedded_scope
     LocalScope *_embedded_scope = NULL;
-    if (!($6->local_entry)) _embedded_scope = $6->local_entry->embedded_scope;
+    if (!($5->local_entry)) _embedded_scope = $5->local_entry->embedded_scope;
     $$->global_entry = NewFunctionEntry($2->string_value, $1->lchild->type == T_Void, 0, NULL, _embedded_scope);
 }
 |   BType T_Identifier '(' FuncFParams ')' Block {
