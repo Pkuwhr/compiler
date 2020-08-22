@@ -40,19 +40,7 @@ typedef struct ArrayInfo {
 
   int size(); // 获取数组的维数
   void init(); // 根据raw_values计算init_values
-  ArrayInitValue get_element(vector<int> *indices); // 获取指定的值
+  ArrayInitValue get_element(vector<int> indices); // 获取指定的值
 } ArrayInfo;
-
-ArrayInitValues NewInitValFromExp(GrammarTree exp);
-ArrayInitValues NewInitValFromInt(int value);
-void PushBeginSeparator(ArrayInitValues *init_val);
-void PushEndSeprator();
-
-// TODO: 修改下面的接口函数
-// 把init_val中的值附在seq后
-void MergeInitValIntoSeq(vector<ArrayInitValue> &init_val,
-                         vector<ArrayInitValue> &seq);
-vector<ArrayInitValue> *NewInitValFromExp(GrammarTree exp);
-void PushSeparator(vector<ArrayInitValue> &init_val);
 
 #endif

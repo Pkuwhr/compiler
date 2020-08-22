@@ -12,8 +12,6 @@ typedef ArrayInitVal *ArrayInitValue;
 struct ArrayInfo;
 struct GrammarTreeNode;
 typedef struct GrammarTreeNode *GrammarTree;
-enum InitValType;
-
 
 
 //-----------------------------------------------------------------------------
@@ -98,7 +96,7 @@ LocalScope *AttachTypeToLocalScope(LocalScope *scope, bool _is_const);
 // 1. 构造初始化向量
 //--------------
 // 把value加入到vector中 若 init = null 则需要新建一个vector
-vector<ArrayInitValue> *NewInitValue(vector<ArrayInitValue> *values, InitValType type, int value, GrammarTree expr);
+vector<ArrayInitValue> *NewInitValue(vector<ArrayInitValue> *values, int type, int value, GrammarTree expr);
 
 // 把tail中的元素连接到head后面 
 // ! head tail都可以为Null

@@ -30,9 +30,9 @@ ScopeEntry TraverseScopeStack(ScopeStack *stack, char *name) {
       local_symtable = it->local;
       for (LocalScope::iterator i = local_symtable->begin();
            i != local_symtable->end(); i++) {
-        if (!strcmp(i->name, name)) {
+        if (!strcmp((*i)->name, name)) {
           result.type = ScopeLocal;
-          result.local_entry = i.base();
+          result.local_entry = *i;
           return result;
         }
       }
@@ -41,9 +41,9 @@ ScopeEntry TraverseScopeStack(ScopeStack *stack, char *name) {
       formal_symtable = it->formal;
       for (FormalScope::iterator i = formal_symtable->begin();
            i != formal_symtable->end(); i++) {
-        if (!strcmp(i->name, name)) {
+        if (!strcmp((*i)->name, name)) {
           result.type = ScopeFormal;
-          result.formal_entry = i.base();
+          result.formal_entry = *i;
           return result;
         }
       }
@@ -52,9 +52,9 @@ ScopeEntry TraverseScopeStack(ScopeStack *stack, char *name) {
       global_symtable = it->global;
       for (GlobalScope::iterator i = global_symtable->begin();
            i != global_symtable->end(); i++) {
-        if (!strcmp(i->name, name)) {
+        if (!strcmp((*i)->name, name)) {
           result.type = ScopeGlobal;
-          result.global_entry = i.base();
+          result.global_entry = *i;
           return result;
         }
       }

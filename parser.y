@@ -171,7 +171,7 @@ ConstDef: // LocalScopeEntry
     T_Identifier '=' ConstInitVal {
     $$ = CreateGrammarTree(ConstDef, 2, $1, $3);
     // 新建一个LocalScopeEntry
-    $$->local_entry = NewLocalIntEntry($1->string_value, true, ($3->raw_values)[0], NULL);
+    $$->local_entry = NewLocalIntEntry($1->string_value, true, ((*($3->raw_values))[0])->value, NULL);
 }
 |   T_Identifier ConstArraySubSeq '=' ConstInitVal {
     $$ = CreateGrammarTree(ConstDef, 3, $1, $2, $4);

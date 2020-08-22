@@ -125,7 +125,7 @@ LocalScope *AttachTypeToLocalScope(LocalScope *scope, bool _is_const) {
   return scope;
 }
 
-vector<ArrayInitValue> *NewInitValue(vector<ArrayInitValue> *values, InitValType type, int value, GrammarTree expr) {
+vector<ArrayInitValue> *NewInitValue(vector<ArrayInitValue> *values, int type, int value, GrammarTree expr) {
   // 判断 values 是否为空
   if (!values) {
     values = (vector<ArrayInitValue> *)malloc(sizeof(vector<ArrayInitValue>));
@@ -141,7 +141,7 @@ vector<ArrayInitValue> *NewInitValue(vector<ArrayInitValue> *values, InitValType
     puts("Error: Cannot malloc space for ArrayInitValue!!");
     exit(-1);
   }
-  a->type = type;
+  a->type = (InitValType) type;
   if (type == Expr)
     a->expr = expr;
   else if (type == Value)
