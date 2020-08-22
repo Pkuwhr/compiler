@@ -10,7 +10,7 @@
 #include "GrammarTree.h"
 #include "SymbolTable.h"
 #include "Nonterminals.h"
-#include "parser.tab.h"
+
 
 #include <string>
 #include <iostream>

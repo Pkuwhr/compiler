@@ -1,10 +1,3 @@
-/*
- * @Date: 2020-06-13 17:07:18
- * @LastEditors: zyk
- * @LastEditTime: 2020-07-29 21:00:52
- * @FilePath: \compiler\GrammarTree.h
- */
-
 #ifndef _GRAMMARTREE_H
 #define _GRAMMARTREE_H
 
@@ -53,14 +46,8 @@ typedef struct GrammarTreeNode {
     FormalScopeEntry *formal_entry;
     GlobalScopeEntry *global_entry;
 
-    // used by ConstDef/VarDef
-    // ArrayInfo *array_info;
-    // used by (const)ArraySubSeq
-    vector<int> *dims;
-    vector<GrammarTreeNode *> exprs;
-    // used by (const)InitVal. when there is only one exp,
-    // the int will be returned in vector too
-    vector<ArrayInitVal *> *array_init_value;
+    vector<int> *dims; // 记录数组维度/下标列表
+    vector<ArrayInitValue> *raw_values; // 记录初始化列表
   };
 } GrammarTreeNode;
 

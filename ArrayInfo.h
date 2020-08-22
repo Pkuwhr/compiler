@@ -1,15 +1,3 @@
-/*
- * File: ArrayInfo.h
- * Project: compiler
- * File Created: Sunday, 2nd August 2020 7:39:21 pm
- * Author: zyk
- * -----
- * Last Modified: Monday, 10th August 2020 4:07:05 pm
- * Modified By: zyk
- * -----
- * 2020 - HUST
- */
-
 #ifndef _ARRAYINFO_H
 #define _ARRAYINFO_H
 
@@ -24,7 +12,7 @@
 using namespace std;
 
 // 标识InitVal的类型
-typedef enum InitValType { Begin, Value, Exp, End } InitValType;
+typedef enum InitValType { Begin, Value, Expr, End } InitValType;
 
 // 存储数组初始化语句的内容
 // 可能的类型：
@@ -42,21 +30,23 @@ typedef struct ArrayInitVal {
 } ArrayInitVal;
 
 typedef ArrayInitVal *ArrayInitValue;
+typedef vector<ArrayInitValue> *ArrayInitValues;
 
 // 存储数组维度、初值等信息
 typedef struct ArrayInfo {
-  // TODO: remove this
-  int const_init_value;       // 常量初值
-  GrammarTree var_init_value; // 变量初值
-
-  vector<int> dims;                   // 数组维度向量
-  vector<ArrayInitValue> raw_values;  // 数组初始化表达式
-  vector<ArrayInitValue> init_values; // 数组初值(长度和数组相同)
+  vector<int> *dims;                   // 数组维度向量
+  vector<ArrayInitValue> *raw_values;  // 数组初始化表达式
+  vector<ArrayInitValue> *init_values; // 数组初值(长度和数组相同)
 
   int size(); // 获取数组的维数
   void init(); // 根据raw_values计算init_values
-  ArrayInitValue get_element(vector<int> indices); // 获取指定的值
+  ArrayInitValue get_element(vector<int> *indices); // 获取指定的值
 } ArrayInfo;
+
+ArrayInitValues NewInitValFromExp(GrammarTree exp);
+ArrayInitValues NewInitValFromInt(int value);
+void PushBeginSeparator(ArrayInitValues *init_val);
+void PushEndSeprator();
 
 // TODO: 修改下面的接口函数
 // 把init_val中的值附在seq后

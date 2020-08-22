@@ -161,7 +161,7 @@
 
 | 名字: char* | 是否常量: bool | 是否数组: bool | 是否Block: bool | 附加信息: ArrayInfo* | 内嵌域列表: LocalScope*                |
 | ----------- | -------------- | -------------- | --------------- | -------------------- | -------------------------------------- |
-| name        | isConst        | isArray        | isBlock         | 常量/数组初始值      | **Block**: pointer<br />Other: nullptr |
+| name        | isConst        | isArray        | isBlock         | 数组初始值           | **Block**: pointer<br />Other: nullptr |
 
 遇到内嵌域（比如`for`循环里的`Block`）时，类别置为`Block`，内嵌列表指针指向子作用域符号表。
 

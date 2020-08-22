@@ -1,10 +1,5 @@
-/*
- * @Date: 2020-07-15 21:53:37
- * @LastEditors: zyk
- * @LastEditTime: 2020-07-25 14:26:40
- * @FilePath: /compiler/ScopeStack.cpp
- */
 #include "ScopeStack.h"
+#include "parser.tab.h"
 
 void InitScopeStack(ScopeStack *stack) { stack->clear(); }
 

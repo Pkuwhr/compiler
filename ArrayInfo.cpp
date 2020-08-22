@@ -13,13 +13,15 @@
 #include "ArrayInfo.h"
 
 // 所有0值共用一个变量
-ArrayInitVal ZERO;
+ArrayInitVal ZERO, LEFT, RIGHT;
 
 int ArrayInfo::size() { return this->dims.size(); }
 
 void ArrayInfo::init() {
   ZERO.type = Value;
   ZERO.value = 0;
+  LEFT.type = Begin;
+  RIGHT.type = End;
 
   const int max_layer =
       size(); // 超过最大层数后 只取{}里的第一个数字 忽略其它数字

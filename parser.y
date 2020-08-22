@@ -1,17 +1,8 @@
-/*
- * @Date: 2020-06-13 17:07:18
- * @LastEditors: zyk
- * @LastEditTime: 2020-07-26 20:09:47
- * @FilePath: /compiler/parser.y
- */ 
-
-
 %{
     #include<stdio.h>
     #include<unistd.h>
 
     #include"GrammarTree.h"
-    #include"Nonterminals.h"
     #include"ScopeStack.h"
     #include"ArrayInfo.h"
     #include"SymbolTable.h"
@@ -68,7 +59,7 @@
 
 %%
 Program : CompUnit { // GlobalScope
-    // 1. 语法分析 建立AST
+    // 1. 词法语法分析 建立AST
     $$ = CreateGrammarTree(Program, 1, $1); 
     // 2. 打印二元组和语法树
     if (tuple_trigger)
@@ -77,6 +68,7 @@ Program : CompUnit { // GlobalScope
         printf("The two-tuples of \"Lexical Analyzing\" are printed!\n");
         printf("__________________________________________________\n");
     }
+    // TODO: 添加语法分析
     if (!gmerror) {
         printf("\nNow print the grammar-tree of \"Grammar Analyzing\":\n");
         printf("__________________________________________________\n\n"); 
@@ -84,23 +76,25 @@ Program : CompUnit { // GlobalScope
         printf("__________________________________________________\n\n"); 
         printf("The grammar-tree of \"Grammar Analyzing\" is printed!\n\n"); 
     }
+    // 3. 建立符号表
     // 把CompUnit的GlobalScope作为Program的GlobalScope
     $$->global_scope = $1->global_scope;
     InitScopeStack(&stack);
     Scope scope;
     scope.type = ScopeGlobal;
     scope.global = $$->global_scope;
-    // 若semantic_check开启 则执行ScopeTrial进行静态语义检查
+    // 4. 若semantic_check开启 则执行ScopeTrial进行静态语义检查
     if (semantic_check) 
     {
+        printf("Semantic check processing...\n");
         ScopeTrial($$, scope, &stack);
     }
-    // 没有语义错误时 打印符号表
+    // 5. 没有语义错误时 打印符号表
     if (!smerror)
     {
         printf("\nNow print the symbol tables of \"Semantic Analyzing\":\n");
         printf("__________________________________________________\n\n"); 
-        // DisplayGlobalScope($1->global_scope, "Program"); // TODO: impl this
+        DisplayGlobalScope($1->global_scope);
         printf("__________________________________________________\n\n"); 
         printf("The symbol tables of \"Semantic Analyzing\" is printed!\n\n"); 
     }
@@ -110,7 +104,7 @@ Program : CompUnit { // GlobalScope
 CompUnit: // GlobalScope
     Decl {
     $$ = CreateGrammarTree(CompUnit, 1, $1);
-    // 新建一个GlobalScopeEntry 因为Decl默认为LocalScopeEntry 所以需要对其进行转换
+    // 新建一个GlobalScope 因为Decl默认为LocalScope 所以需要对其进行转换
     $$->global_scope = AddLocalIntoGlobal($$->global_scope, $1->local_scope);
 }
 |   FuncDef {
@@ -177,19 +171,17 @@ ConstDef: // LocalScopeEntry
     T_Identifier '=' ConstInitVal {
     $$ = CreateGrammarTree(ConstDef, 2, $1, $3);
     // 新建一个LocalScopeEntry
-    // $$->local_entry = NewLocalIntEntry($1->string_value, false, false, NewInitValue($3->int_value), NULL); // FIXME
+    $$->local_entry = NewLocalIntEntry($1->string_value, true, ($3->raw_values)[0], NULL);
 }
 |   T_Identifier ConstArraySubSeq '=' ConstInitVal {
     $$ = CreateGrammarTree(ConstDef, 3, $1, $2, $4);
-    // 新建一个LocalScopeEntry FIXME
-    // $$->local_entry = NewLocalArrayEntry($1->string_value, 
-    //                                      true, false, 
-    //                                      NewArrayInfo($2->dims, NULL, $4->array_init_value), 
-    //                                      NULL);
+    // 新建一个LocalScopeEntry
+    $$->local_entry = NewLocalArrayEntry($1->string_value, true, NewArrayInfo($2->dims, $4->raw_values));
+    $$->local_entry->array_info->init();
 }
 ;
 
-ConstArraySubSeq: // dims
+ConstArraySubSeq: // dims - 这里的 vector 包含第一维长度
     '[' Exp ']' {
     $$ = CreateGrammarTree(ConstArraySubSeq, 1, $2);
     // 此为第一维的大小
@@ -197,7 +189,7 @@ ConstArraySubSeq: // dims
     if (!$2->is_constant_expr) {
         yyerror("Line %d: ConstExp needed!", yylineno);
     }
-    $$->dims = AddIntoDimsVector($$->dims, $2->expr_value);
+    $$->dims = AppendDim($$->dims, $2->expr_value);
 }
 | ConstArraySubSeq '[' Exp ']' {
     $$ = CreateGrammarTree(ConstArraySubSeq, 2, $1, $3);
@@ -205,26 +197,23 @@ ConstArraySubSeq: // dims
     if (!$3->is_constant_expr) {
         yyerror("Line %d: ConstExp needed!", yylineno);
     }
-    $$->dims = AddIntoDimsVector($1->dims, $3->expr_value);
+    $$->dims = AppendDim($1->dims, $3->expr_value);
 }
 ;
 
 // 此项与ConstArraySubSeq的区别在于这里的Exp不要求在编译时就能计算出值
-// 故这里的Exp在ArrayInfo中保存为GrammarTree*
-ArraySubSeq: // exprs
+// 对应给数组指定元素赋值的情况 **暂时不处理**
+ArraySubSeq:
     '[' Exp ']' {
     $$ = CreateGrammarTree(ArraySubSeq, 0, -1);
-    // 新建一个空的选择符
-    // $$->exprs = AddIntoExprsVector($$->exprs, $2); FIXME
 }
 | ArraySubSeq '[' Exp ']' {
     $$ = CreateGrammarTree(ArraySubSeq, 2, $1, $3);
-    // 将Exp对应的值放在选择符中
-    // $$->exprs = AddIntoExprsVector($1->exprs, $3); FIXME
 }
 ;
 
-ConstInitVal: // array_init_value
+
+ConstInitVal: // vector<ArrayInitValue> *raw_values
     Exp {
     $$ = CreateGrammarTree(ConstInitVal, 1, $1);
     // 计算Exp的值 这里的Exp需要能在编译时就求出值
@@ -232,27 +221,27 @@ ConstInitVal: // array_init_value
     if (!$1->is_constant_expr) {
         yyerror("Line %d: ConstExp needed!\n", yylineno);
     }
-    $$->array_init_value = AddExprIntoArrayInitValue($$->array_init_value, $1->expr_value, false);
+    $$->raw_values = NewInitValue($$->raw_values, Value, $1->expr_value, NULL);
 }
 |   '{' ConstInitValSeq '}' {
     $$ = CreateGrammarTree(ConstInitVal, 1, $2);
-    $$->array_init_value = MergeArrayInitValue($$->array_init_value, $2->array_init_value);
+    $$->raw_values = AppendInitValue($$->raw_values, $2->raw_values, true);
 }
 |   '{' '}' {
     $$ = CreateGrammarTree(ConstInitVal, 0, -1);
     // 这一部分的子数组初始化为全零
-    $$->array_init_value = MergeArrayInitValue($$->array_init_value, NULL);
+    $$->raw_values = AppendInitValue($$->raw_values, NULL, true);
 }
 ;
 
-ConstInitValSeq: // array_init_value
+ConstInitValSeq: // vector<ArrayInitValue> *raw_values
     ConstInitVal {
     $$ = CreateGrammarTree(ConstInitValSeq, 1, $1);
-    $$->array_init_value = MergeArrayInitValue($$->array_init_value, $1->array_init_value);
+    $$->raw_values = AppendInitValue($$->raw_values, $1->raw_values, false);
 }
 |   ConstInitValSeq ',' ConstInitVal {
     $$ = CreateGrammarTree(ConstInitValSeq, 2, $1, $3);
-    $$->array_init_value = MergeArrayInitValue($1->array_init_value, $3->array_init_value);
+    $$->raw_values = AppendInitValue($1->raw_values, $3->raw_values, false);
 }
 ;
 
@@ -260,6 +249,7 @@ ConstInitValSeq: // array_init_value
 VarDecl: // LocalScope
     BType VarDefSeq ';' {
     $$ = CreateGrammarTree(VarDecl, 2, $1, $2);
+    // 添加变量标记
     $$->local_scope = AttachTypeToLocalScope($2->local_scope, false);
 }
 ;
@@ -278,71 +268,81 @@ VarDefSeq: // LocalScope
 VarDef: // LocalScopeEntry
     T_Identifier {
     $$ = CreateGrammarTree(VarDef, 1, $1);
-    $$->local_entry = NewLocalEntry($1->string_value, false, false, NULL, NULL);
+    $$->local_entry = NewLocalIntEntry($1->string_value, false, 0, NULL);
 }
 |   T_Identifier ConstArraySubSeq {
     $$ = CreateGrammarTree(VarDef, 2, $1, $2);
-    $$->local_entry = NewLocalEntry($1->string_value, true, false, NewArrayInfo($2->dims, NULL, NULL), NULL);
+    $$->local_entry = NewLocalArrayEntry($1->string_value, false, NewArrayInfo($2->dims, NULL));
 }
 |   T_Identifier '=' InitVal {
     $$ = CreateGrammarTree(VarDef, 2, $1, $3);
     if ($3->lchild->type != Exp) { //　FIXME
         yyerror("Line %d: InitVal must be Exp type!\n", yylineno);
     }
-    $$->local_entry = NewLocalEntry($1->string_value, false, false, NewInitValue(false, 0, $3->lchild), NULL);
+    $$->local_entry = NewLocalIntEntry($1->string_value, false, 0, $3);
 } 
 |   T_Identifier ConstArraySubSeq '=' InitVal {
     $$ = CreateGrammarTree(VarDef, 3, $1, $2, $4);
-    // $$->local_entry = NewLocalEntry($1->string_value, true, false, NewArrayInfo($2->dims, $4->exprs, NULL), NULL); FIXME
+    $$->local_entry = NewLocalArrayEntry($1->string_value, false, NewArrayInfo($2->dims, $4->raw_values));
 }
 ;
 
-InitVal: // array_init_value
+InitVal: // vector<ArrayInitValue> *raw_values
     Exp {
     $$ = CreateGrammarTree(InitVal, 1, $1);
-    // TODO: 记录exp
+    $$->raw_values = NewInitValue($$->raw_values, Expr, 0, $1);
 }
 |   '{' InitValSeq '}' {
     $$ = CreateGrammarTree(InitVal, 1, $2);
+    AppendInitValue($$->raw_values, $2->raw_values, true);
+}
+|   '{' '}' {
+    $$ = CreateGrammarTree(InitVal, 0, -1);
+    AppendInitValue($$->raw_values, NULL, false);
 }
 ;
 
-InitValSeq: // array_init_value
+InitValSeq: // vector<ArrayInitValue> *raw_values
     InitVal {
     $$ = CreateGrammarTree(InitValSeq, 1, $1);
+    $$->raw_values = AppendInitValue($$->raw_values, $1->raw_values, false);
 }
 |   InitValSeq ',' InitVal {
     $$ = CreateGrammarTree(InitValSeq, 2, $1, $3);
+    $$->raw_values = AppendInitValue($1->raw_values, $3->raw_values, false);
 }
 ;
+
+
 
 FuncDef: // GlobalScopeEntry
     BType T_Identifier '(' ')' Block {
     $$ = CreateGrammarTree(FuncDef, 3, $1, $2, $5);
     // 新建一个FormalScopeEntry和GlobalScopeEntry
-    // FormalScope置为Null
-    // LocalScopeEntry置为Block
-    $$->global_entry = NewGlobalEntry($2->string_value, true, $1->lchild->type == T_Void, 
-                                      NULL, 0, NULL, $5->local_scope);
+    // FormalScope 置为 Null
+    // LocalScopeEntry 置为 Block->embedded_scope
+    LocalScope *_embedded_scope = NULL;
+    if (!($6->local_entry)) _embedded_scope = $6->local_entry->embedded_scope;
+    $$->global_entry = NewFunctionEntry($2->string_value, $1->lchild->type == T_Void, 0, NULL, _embedded_scope);
 }
 |   BType T_Identifier '(' FuncFParams ')' Block {
     $$ = CreateGrammarTree(FuncDef, 4, $1, $2, $4, $6);
-    // 新建一个FormalScopeEntry和GlobalScopeEntry
-    $$->global_entry = NewGlobalEntry($2->string_value, true, $1->lchild->type == T_Void,
-                                      NULL, $4->formal_scope->size(), $4->formal_scope, $6->local_scope);
+    LocalScope *_embedded_scope = NULL;
+    if (!($6->local_entry)) _embedded_scope = $6->local_entry->embedded_scope;
+    $$->global_entry = NewFunctionEntry($2->string_value, $1->lchild->type == T_Void, $4->formal_scope->size(), $4->formal_scope, _embedded_scope);
 }
 ;
 
 FuncFParams: // FormalScope
     FuncFParam {
     $$ = CreateGrammarTree(FuncFParams, 1, $1);
-    // 新建FormalScope 加入FuncParam
+    // 新建FormalScope 加入 FuncParam
     $$->formal_scope = AddEntryIntoFormalScope($$->formal_scope, $1->formal_entry);
 }
 |   FuncFParams ',' FuncFParam {
     $$ = CreateGrammarTree(FuncFParams, 2, $1, $3);
     // FIXME
-    // $$->formal_scope = AddEntryIntoFormalScope($1->formal_scope, $2->formal_entry);
+    $$->formal_scope = AddEntryIntoFormalScope($1->formal_scope, $3->formal_entry);
 }
 ;
 
@@ -354,23 +354,27 @@ FuncFParam: // FormalScopeEntry
 }
 |   BType T_Identifier '[' ']' ArraySubSeq {
     $$ = CreateGrammarTree(FuncFParam, 3, $1, $2, $5);
-    $$->formal_entry = NewFormalEntry($2->string_value, true, NewArrayInfo($5->dims, NULL, NULL));
+    $$->formal_entry = NewFormalEntry($2->string_value, true, NewArrayInfo(InsertDim1($5->dims), NULL));
 }
 ;
 
+
+
 Block: // LocalScopeEntry
+    // block 作为函数体时 GlobalScopeEntry（对应函数定义）的LocalScope是这个entry的embeddedScope字段
+    // block 作为{ }里的embedded scope时 需要是函数local scope里的一个表项 即直接添加这个entry
     '{' '}' {
     $$ = CreateGrammarTree(Block, 0, -1);
-    // Block直接设置为空的LocalScope
-    $$->local_scope = NULL;
+    // Block直接设置为空的LocalScopeEntry
+    $$->local_entry = NULL; // ！ 注意 之后在处理函数定义时需要判断是否为空
 }
 |   '{' BlockItemSeq '}' {
     $$ = CreateGrammarTree(Block, 1, $2);
-    $$->local_scope = $2->local_scope;
+    $$->local_entry = NewEmbeddedScopeEntry($2->local_scope);
 }
 ;
 
-BlockItemSeq: // LocalScope
+BlockItemSeq: // LocalScope - 可含有多个变量/数组定义
     BlockItem {
     $$ = CreateGrammarTree(BlockItemSeq, 1, $1);
     $$->local_scope = AddLocalIntoLocal($$->local_scope, $1->local_scope);
@@ -385,48 +389,17 @@ BlockItemSeq: // LocalScope
 BlockItem: // LocalScope
     Decl {
     $$ = CreateGrammarTree(BlockItem, 1, $1);
-    $$->local_scope = $1->local_scope;
+    $$->local_scope = AddLocalIntoLocal($$->local_scope, $1->local_scope);
 }
 |   Stmt {
-    // 直接在这里处理Stmt中的Block
     $$ = CreateGrammarTree(BlockItem, 1, $1);
-    // 1. Stmt -> Block
-    if ($$->lchild->type == Block) {
-        // add 1 entry
-        LocalScopeEntry *blk = NewLocalEntry(NULL, false, true, NULL, $$->lchild->local_scope);
-        $$->local_scope = AddEntryIntoLocalScope($$->local_scope, blk);
-    }
-    // 2. Stmt -> T_If '(' Exp ')' Stmt( -> Block)
-    else if ($$->lchild->type == T_If &&
-             $$->lchild->rchild->rchild->rchild == NULL) {
-        // add 1 entry
-        LocalScopeEntry *if_blk = NewLocalEntry(NULL, false, true, NULL, $$->lchild->rchild->rchild->lchild->local_scope);
-        $$->local_scope = AddEntryIntoLocalScope($$->local_scope, if_blk);
-    }
-    // 3. Stmt -> T_If '(' Exp ')' Stmt T_Else Stmt
-    else if ($$->lchild->type == T_If &&
-             $$->lchild->rchild->rchild->rchild->type == T_Else) { //FIXME
-        // add 2 entries
-        LocalScopeEntry *if_blk = NewLocalEntry(NULL, false, true, NULL, $$->lchild->rchild->rchild->lchild->local_scope);
-        LocalScopeEntry *else_blk = NewLocalEntry(NULL, false, true, NULL, $$->lchild->rchild->rchild->rchild->rchild->lchild->local_scope);
-        $$->local_scope = AddEntryIntoLocalScope($$->local_scope, if_blk);
-        $$->local_scope = AddEntryIntoLocalScope($$->local_scope, else_blk);
-    }
-    // 4. Stmt -> T_While '(' Exp ')' Stmt
-    else if ($$->lchild->type == T_While) {
-        // add 1 entry
-        LocalScopeEntry *while_blk = NewLocalEntry(NULL, false, true, NULL, $$->lchild->rchild->rchild->lchild->local_scope);
-        $$->local_scope = AddEntryIntoLocalScope($$->local_scope, while_blk);
-    }
-    // 5. others
-    else {
-        // add no entry
-        $$->local_scope = NULL;
-    }
+    $$->local_scope = AddLocalIntoLocal($$->local_scope, $1->local_scope);
 }
 ;
 
-Stmt:
+
+
+Stmt: // LocalScope
     LVal '=' Exp ';' {
     $$ = CreateGrammarTree(Stmt, 3, $1, $2, $3);
 }
@@ -438,15 +411,24 @@ Stmt:
 }
 |   Block {
     $$ = CreateGrammarTree(Stmt, 1, $1);
+    // add 1 entry
+    $$->local_scope = AddEntryIntoLocalScope($$->local_scope, $1->local_entry);
 }
 |   T_If '(' Exp ')' Stmt %prec T_NoElse {
     $$ = CreateGrammarTree(Stmt, 3, $1, $3, $5);
+    // add 1 entry
+    $$->local_scope = AddEntryIntoLocalScope($$->local_scope, $5->local_entry);
 }
 |   T_If '(' Exp ')' Stmt T_Else Stmt {
     $$ = CreateGrammarTree(Stmt, 5, $1, $3, $5, $6, $7);
+    // add 2 entries
+    $$->local_scope = AddEntryIntoLocalScope($$->local_scope, $5->local_entry);
+    $$->local_scope = AddEntryIntoLocalScope($$->local_scope, $7->local_entry);
 }
 |   T_While '(' Exp ')' Stmt {
     $$ = CreateGrammarTree(Stmt, 3, $1, $3, $5);
+    // add 1 entry
+    $$->local_scope = AddEntryIntoLocalScope($$->local_scope, $5->local_entry);
 }
 |   T_Break ';' {
     $$ = CreateGrammarTree(Stmt, 1, $1);
@@ -532,16 +514,19 @@ Exp:
 }
 ;
 
+
+// 左值表达式
 LVal:
-    T_Identifier ArraySubSeq {
+    T_Identifier ArraySubSeq { // 数组元素
     $$ = CreateGrammarTree(LVal, 2, $1, $2);
 }
-|   T_Identifier {
+|   T_Identifier { // 标识符
     $$ = CreateGrammarTree(LVal, 1, $1);
 }
 ;
 
 
+// 函数实参
 FuncRParams:
     Exp {
     $$ = CreateGrammarTree(FuncRParams, 1, $1);
@@ -554,7 +539,7 @@ FuncRParams:
 
 %%
 
-#include<stdarg.h>
+#include<stdarg.h> // 支持可变数目参数
 
 void yyerror(const char* fmt, ...)
 {
