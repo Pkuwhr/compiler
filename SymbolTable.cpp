@@ -326,19 +326,117 @@ GlobalScopeEntry *NewFunctionEntry(char *_name, bool _is_void, int _formal_count
   return e;
 }
 
-// TODO: following 4 display functions
 void DisplayArrayInfo(ArrayInfo *array_info) {
-  puts("Not Implemented!");
+  if (!array_info || !(array_info->dims))
+    puts("[ERROR] Empty Array Info");
+  // 打印维度
+  else {
+    printf("Dimensions:");
+    for (vector<int>::iterator it = array_info->dims->begin(); it != array_info->dims->end(); it++) {
+      printf("[ %d ]", *it);
+    }
+    printf("\n");
+  }
 }
 
-void DisplayLocalScope(LocalScope *local_symtable) {
-  puts("Not Implemented!");
+void DisplayLocalScope(LocalScope *symtable) {
+  if (!symtable) {
+    puts("[ Empty Scope ]");
+    return;
+  }
+
+  for (LocalScope::iterator it = symtable->begin(); it != symtable->end(); it++) {
+    LocalScopeEntry *e = *it;
+
+    if (e->is_block) {
+      // 打印内嵌作用域信息
+      printf("Embedded Scope [ %s ]: \n", e->name);
+      DisplayLocalScope(e->embedded_scope);
+    } else if (e->is_array) {
+      // 打印数组信息
+      printf("\nArray [ %s ]: \n", e->name);
+      printf("\tConstant: ");
+      if (e->is_const) printf("yes\n"); else printf("no\n");
+      DisplayArrayInfo(e->array_info);
+    } else {
+      // 打印变量信息
+      printf("\nVariable [ %s ]: \n", e->name);
+      printf("\tConstant: ");
+      if (e->is_const) {
+        printf("yes\t"); 
+        printf("Value: %d\n", e->int_init_value);
+      }
+      else {
+        printf("no\n");
+      } 
+    }
+  }
 }
 
-void DisplayFormalScope(FormalScope *formal_symtable) {
-  puts("Not Implemented!");
+void DisplayFormalScope(FormalScope *symtable) {
+  printf("\t");
+
+  if (!symtable) {
+    puts("[ Empty Scope ]");
+    return;
+  }
+
+  for (FormalScope::iterator it = symtable->begin(); it != symtable->end(); it++) {
+    FormalScopeEntry *e = *it;
+
+    if (e->is_array) {
+      printf("Array [ %s ]\t", e->name);
+      // TODO: 打印数组维度
+    
+    } else {
+      printf("Variable [ %s ]\t", e->name);
+
+    }
+  }
+
+  printf("\n");
 }
 
-void DisplayGlobalScope(GlobalScope *global_symtable) {
-  puts("Not Implemented!");
+void DisplayGlobalScope(GlobalScope *symtable) {
+  if (!symtable) {
+    puts("[ Empty Scope ]");
+    return;
+  }
+
+  for (GlobalScope::iterator it = symtable->begin(); it != symtable->end(); it++) {
+    GlobalScopeEntry *e = *it;
+
+    if (e->is_func) {
+      // 打印函数信息
+      printf("\nFunction [ %s ]: \n", e->name);
+      // 返回 void / 参数个数 / 形参 / 函数体
+      printf("\tReturn Void: ");
+      if (e->is_void) printf("yes\t"); else printf("no\t\t");
+      printf("Formals: %d\n", e->formal_count);
+
+      printf("Function [ %s ]'s Formal Scope: \n", e->name);
+      DisplayFormalScope(e->formal_scope);
+      printf("Function [ %s ]'s Local Scope: \n", e->name);
+      DisplayLocalScope(e->local_scope);
+    
+    } else if (e->is_array) {
+      // 打印数组信息
+      printf("\nArray [ %s ]: \n", e->name);
+      printf("\tConstant: ");
+      if (e->is_const) printf("yes\n"); else printf("no\n");
+      DisplayArrayInfo(e->array_info);
+    
+    } else {
+      // 打印变量信息
+      printf("\nVariable [ %s ]: \n", e->name);
+      printf("\tConstant: ");
+      if (e->is_const) {
+        printf("yes\t"); 
+        printf("Value: %d\n", e->int_init_value);
+      }
+      else {
+        printf("no\n");
+      } 
+    }
+  }
 }
