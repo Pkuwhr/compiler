@@ -19,15 +19,22 @@ GlobalScope *AddLocalIntoGlobal(GlobalScope *global_scope,
     global_scope->clear();
   }
 
-  GlobalScopeEntry *global_entry =
-      (GlobalScopeEntry *)malloc(sizeof(GlobalScopeEntry));
-  if (!global_entry) {
-    puts("Error: Cannot malloc space for GlobalScopeEntry!!");
-    exit(-1);
-  }
   for (LocalScope::iterator it = local_scope->begin(); it != local_scope->end();
        it++) {
-    global_entry->name = (*it)->name;
+    GlobalScopeEntry *global_entry =
+        (GlobalScopeEntry *)malloc(sizeof(GlobalScopeEntry));
+    if (!global_entry) {
+      puts("Error: Cannot malloc space for GlobalScopeEntry!!");
+      exit(-1);
+    }
+    
+    char *temp = (char *)malloc(sizeof((*it)->name));
+    if (!temp) {
+      puts("Error: Cannot malloc space for name string!!");
+      exit(-1);
+    }
+    strcpy(temp, (*it)->name);
+    global_entry->name = temp;
 
     // it 不是函数
     global_entry->formal_scope = nullptr;
@@ -241,7 +248,13 @@ LocalScopeEntry *NewLocalArrayEntry(char *_name, bool _is_const,
   // 分配内存空间
   LocalScopeEntry *e = (LocalScopeEntry *)malloc(sizeof(LocalScopeEntry));
   // 给各字段赋值
-  e->name = _name;
+  char *temp = (char *)malloc(sizeof(_name));
+  if (!temp) {
+    puts("Error: Cannot malloc space for name string!!");
+    exit(-1);
+  }
+  strcpy(temp, _name);
+  e->name = temp;
   e->is_const = _is_const;
   e->array_info = _array_info;
 
@@ -257,7 +270,13 @@ LocalScopeEntry *NewLocalIntEntry(char *_name, bool _is_const,
   // 分配内存空间
   LocalScopeEntry *e = (LocalScopeEntry *)malloc(sizeof(LocalScopeEntry));
   // 给各字段赋值
-  e->name = _name;
+  char *temp = (char *)malloc(sizeof(_name));
+  if (!temp) {
+    puts("Error: Cannot malloc space for name string!!");
+    exit(-1);
+  }
+  strcpy(temp, _name);
+  e->name = temp;
   e->is_const = _is_const;
   if (_is_const)
     e->int_init_value = _int_init_value;
@@ -275,7 +294,13 @@ LocalScopeEntry *NewEmbeddedScopeEntry(LocalScope *_embedded_scope) {
   LocalScopeEntry *e = (LocalScopeEntry *)malloc(sizeof(LocalScopeEntry));
   // 给各字段赋值
   // TODO: 后续可能需要区分不同 Block
-  e->name = "Block";
+  char *temp = (char *)malloc(sizeof("Block"));
+  if (!temp) {
+    puts("Error: Cannot malloc space for name string!!");
+    exit(-1);
+  }
+  strcpy(temp, "Block");
+  e->name = temp;
   e->is_block = true;
   e->embedded_scope = _embedded_scope;
 
@@ -290,7 +315,13 @@ FormalScopeEntry *NewFormalEntry(char *_name, bool _is_array,
                                  ArrayInfo *_array_info) {
   FormalScopeEntry *e = (FormalScopeEntry *)malloc(sizeof(FormalScopeEntry));
 
-  e->name = _name;
+  char *temp = (char *)malloc(sizeof(_name));
+  if (!temp) {
+    puts("Error: Cannot malloc space for name string!!");
+    exit(-1);
+  }
+  strcpy(temp, _name);
+  e->name = temp;
   e->is_array = _is_array;
   e->array_info = _array_info;
 
@@ -304,7 +335,13 @@ GlobalScopeEntry *NewGlobalIntEntry(char *_name, bool _is_const,
   // 分配内存空间
   GlobalScopeEntry *e = (GlobalScopeEntry *)malloc(sizeof(GlobalScopeEntry));
 
-  e->name = _name;
+  char *temp = (char *)malloc(sizeof(_name));
+  if (!temp) {
+    puts("Error: Cannot malloc space for name string!!");
+    exit(-1);
+  }
+  strcpy(temp, _name);
+  e->name = temp;
   e->is_const = _is_const;
   if (_is_const)
     e->int_init_value = _int_init_value;
@@ -324,7 +361,13 @@ GlobalScopeEntry *NewGlobalArrayEntry(char *_name, bool _is_const,
                                       ArrayInfo *_array_info) {
   GlobalScopeEntry *e = (GlobalScopeEntry *)malloc(sizeof(GlobalScopeEntry));
 
-  e->name = _name;
+  char *temp = (char *)malloc(sizeof(_name));
+  if (!temp) {
+    puts("Error: Cannot malloc space for name string!!");
+    exit(-1);
+  }
+  strcpy(temp, _name);
+  e->name = temp;
   e->is_const = _is_const;
   e->array_info = _array_info;
 
@@ -343,7 +386,13 @@ GlobalScopeEntry *NewFunctionEntry(char *_name, bool _is_void,
                                    LocalScope *_local_scope) {
   GlobalScopeEntry *e = (GlobalScopeEntry *)malloc(sizeof(GlobalScopeEntry));
 
-  e->name = _name;
+  char *temp = (char *)malloc(sizeof(_name));
+  if (!temp) {
+    puts("Error: Cannot malloc space for name string!!");
+    exit(-1);
+  }
+  strcpy(temp, _name);
+  e->name = temp;
   e->is_void = _is_void;
   e->formal_count = _formal_count;
   e->formal_scope = _formal_scope;
@@ -439,7 +488,7 @@ void DisplayFormalScope(FormalScope *symtable) {
 void DisplayGlobalScope(GlobalScope *symtable) {
   BLUE
 
-  if (!symtable) {
+      if (!symtable) {
     puts("[ Empty Scope ]");
     return;
   }
@@ -461,8 +510,7 @@ void DisplayGlobalScope(GlobalScope *symtable) {
 
       printf("Function [ %s ]'s Formal Scope: \n", e->name);
       DisplayFormalScope(e->formal_scope);
-      BLUE
-      printf("Function [ %s ]'s Local Scope: \n", e->name);
+      BLUE printf("Function [ %s ]'s Local Scope: \n", e->name);
       DisplayLocalScope(e->local_scope);
       BLUE
 
