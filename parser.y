@@ -205,10 +205,13 @@ ConstArraySubSeq: // dims - 这里的 vector 包含第一维长度
 // 对应给数组指定元素赋值的情况 **暂时不处理**
 ArraySubSeq:
     '[' Exp ']' {
-    $$ = CreateGrammarTree(ArraySubSeq, 0, -1);
+    $$ = CreateGrammarTree(ArraySubSeq, 1, $2);
 }
 | ArraySubSeq '[' Exp ']' {
     $$ = CreateGrammarTree(ArraySubSeq, 2, $1, $3);
+}
+| /* epsilon */ {
+    $$ = CreateGrammarTree(ArraySubSeq, 0, -1);
 }
 ;
 
