@@ -204,6 +204,9 @@ vector<int> *AppendDim(vector<int> *dims, int d) {
 }
 
 vector<int> *InsertDim1(vector<int> *dims) {
+  // TODO: 此函数只在 构造 ArraySubSep 时使用 故暂不实现
+  if (!dims) return nullptr;
+  
   dims->insert(dims->begin(), 0);
   return dims;
 }
@@ -252,7 +255,8 @@ LocalScopeEntry *NewEmbeddedScopeEntry(LocalScope *_embedded_scope) {
   // 分配内存空间
   LocalScopeEntry *e = (LocalScopeEntry *)malloc(sizeof(LocalScopeEntry));
   // 给各字段赋值
-  e->name = "Block"; // TODO: 后续可能需要区分不同 Block 可以使用 name 标识
+  // TODO: 后续可能需要区分不同 Block
+  e->name = "Block";
   e->is_block = true;
   e->embedded_scope = _embedded_scope;
   

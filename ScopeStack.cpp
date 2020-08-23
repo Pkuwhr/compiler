@@ -70,22 +70,29 @@ ScopeEntry TraverseScopeStack(ScopeStack *stack, char *name) {
 }
 
 // check if given root is a constant expr
-void CheckExprValue(GrammarTree tree, ScopeStack *stack) {
-  assert(tree->type == Exp);
-  if (!tree)
-    return;
+void CheckExprValue(GrammarTree tree) {
+  // 判断 tree 是否为空
+  if (!tree) return;
 
+  if (tree->type != Exp) {
+    puts("Invalid Expr!");
+    exit(-1);
+  }
+
+  // * Exp 'op' Exp 形式
   if (tree->lchild->type == Exp) {
-    // Exp '*' Exp 形式
+    // 检查两个子 Exp 节点
     if (!tree->lchild->isVisited)
-      CheckExprValue(tree->lchild, stack);
+      CheckExprValue(tree->lchild);
     if (!tree->lchild->rchild->rchild->isVisited)
-      CheckExprValue(tree->lchild->rchild->rchild, stack);
+      CheckExprValue(tree->lchild->rchild->rchild);
 
     if (tree->lchild->is_constant_expr &&
         tree->lchild->rchild->rchild->is_constant_expr) {
+      // 两个操作数为常量 故 tree 也是常量
       tree->is_constant_expr = true;
-      switch (tree->lchild->rchild->type) {
+
+      switch (tree->lchild->rchild->type) { // 处理不同操作符
       case '*':
         tree->expr_value =
             tree->lchild->expr_value * tree->lchild->rchild->rchild->expr_value;
@@ -162,10 +169,13 @@ void CheckExprValue(GrammarTree tree, ScopeStack *stack) {
       tree->is_constant_expr = false;
     }
     tree->isVisited = true;
+  
+  
+  // * ( Exp ) 形式
   } else if (tree->lchild->type == '(') {
     // '(' Exp ')'
     if (!tree->lchild->rchild->isVisited)
-      CheckExprValue(tree->lchild->rchild, stack);
+      CheckExprValue(tree->lchild->rchild);
 
     if (tree->lchild->rchild->is_constant_expr) {
       tree->expr_value = tree->lchild->rchild->expr_value;
@@ -174,13 +184,17 @@ void CheckExprValue(GrammarTree tree, ScopeStack *stack) {
       tree->is_constant_expr = false;
     }
     tree->isVisited = true;
-  } else if (tree->lchild->rchild->type == Exp) {
+  
+  
+  // * 'op' Exp 形式
+  } else if (tree->lchild->rchild && tree->lchild->rchild->type == Exp) {
     // '-' Exp
     if (!tree->lchild->rchild->isVisited)
-      CheckExprValue(tree->lchild->rchild, stack);
+      CheckExprValue(tree->lchild->rchild);
 
     if (tree->lchild->rchild->is_constant_expr) {
       tree->is_constant_expr = true;
+
       switch (tree->lchild->type) {
       case '-':
         tree->expr_value = -(tree->lchild->rchild->expr_value);
@@ -202,14 +216,21 @@ void CheckExprValue(GrammarTree tree, ScopeStack *stack) {
       tree->is_constant_expr = false;
     }
     tree->isVisited = true;
+  
+  
+  // * 整型常量
   } else if (tree->lchild->type == T_IntConstant) {
     tree->isVisited = true;
     tree->is_constant_expr = true;
     tree->expr_value = tree->lchild->int_value;
+  
+  
+  // * 字符常量 / 左值 / 函数调用
   } else {
     tree->isVisited = true;
     tree->is_constant_expr = false;
   }
+  
   return;
 }
 

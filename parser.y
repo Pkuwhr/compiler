@@ -185,7 +185,7 @@ ConstArraySubSeq: // dims - 这里的 vector 包含第一维长度
     '[' Exp ']' {
     $$ = CreateGrammarTree(ConstArraySubSeq, 1, $2);
     // 此为第一维的大小
-    CheckExprValue($2, &stack);
+    CheckExprValue($2);
     if (!$2->is_constant_expr) {
         yyerror("Line %d: ConstExp needed!", yylineno);
     }
@@ -193,7 +193,7 @@ ConstArraySubSeq: // dims - 这里的 vector 包含第一维长度
 }
 | ConstArraySubSeq '[' Exp ']' {
     $$ = CreateGrammarTree(ConstArraySubSeq, 2, $1, $3);
-    CheckExprValue($3, &stack);
+    CheckExprValue($3);
     if (!$3->is_constant_expr) {
         yyerror("Line %d: ConstExp needed!", yylineno);
     }
@@ -217,7 +217,7 @@ ConstInitVal: // vector<ArrayInitValue> *raw_values
     Exp {
     $$ = CreateGrammarTree(ConstInitVal, 1, $1);
     // 计算Exp的值 这里的Exp需要能在编译时就求出值
-    CheckExprValue($1, &stack);
+    CheckExprValue($1);
     if (!$1->is_constant_expr) {
         yyerror("Line %d: ConstExp needed!\n", yylineno);
     }
@@ -322,13 +322,13 @@ FuncDef: // GlobalScopeEntry
     // FormalScope 置为 Null
     // LocalScopeEntry 置为 Block->embedded_scope
     LocalScope *_embedded_scope = NULL;
-    if (!($5->local_entry)) _embedded_scope = $5->local_entry->embedded_scope;
+    if ($5->local_entry) _embedded_scope = $5->local_entry->embedded_scope;
     $$->global_entry = NewFunctionEntry($2->string_value, $1->lchild->type == T_Void, 0, NULL, _embedded_scope);
 }
 |   BType T_Identifier '(' FuncFParams ')' Block {
     $$ = CreateGrammarTree(FuncDef, 4, $1, $2, $4, $6);
     LocalScope *_embedded_scope = NULL;
-    if (!($6->local_entry)) _embedded_scope = $6->local_entry->embedded_scope;
+    if ($6->local_entry) _embedded_scope = $6->local_entry->embedded_scope;
     $$->global_entry = NewFunctionEntry($2->string_value, $1->lchild->type == T_Void, $4->formal_scope->size(), $4->formal_scope, _embedded_scope);
 }
 ;

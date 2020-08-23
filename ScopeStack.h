@@ -64,7 +64,7 @@ Scope &GetStackTop();
 // 根据name查找符号表对应的符号
 ScopeEntry TraverseScopeStack(ScopeStack *stack, string name);
 // 查找对应的tree是否是constant元素
-void CheckExprValue(GrammarTree tree, ScopeStack *stack);
+void CheckExprValue(GrammarTree tree);
 // 静态语义检查
 void ScopeTrial(GrammarTree tree, Scope scope, ScopeStack *stack);
 
