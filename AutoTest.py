@@ -17,12 +17,15 @@ source.add_argument("-a", "--all", help="run all test under the dir", action="st
 # show compiler output
 parser.add_argument("-v", "--verbose", help="show all output of compiler", action="store_true")
 
+# stop before compile each file
+parser.add_argument("-c", "--confirm", help="require confirmation before processing each file", action="store_true")
+
 args = parser.parse_args()
 
 # get all test imput file name
 test_file = list(filter(lambda x: re.fullmatch(args.name, x) != None, os.listdir(args.dir)))
 if args.verbose:
-    print("Test Input: ", test_file)
+    print("Test Input:\n" + '\n'.join(test_file))
 
 if args.dir[-1] != '/':
     test_dir = args.dir + '/'
@@ -34,13 +37,22 @@ error_count = 0
 error_filenames = list() # save file names with errors
 
 for file in test_file:
+    if args.confirm:
+        conf = input("Compile next file [ " + file + " ] ? (y/n)")
+        if conf != "y":
+            exit()
+
     if args.verbose:
         print("Compiling", file)
     try:
         out = subprocess.check_output(['./compiler', test_dir + file], stderr=subprocess.STDOUT)
         if args.verbose:
-            print(out)
-    except subprocess.CalledProcessError as e:
+            try:
+                print(out.decode('utf-8'))
+            except UnicodeDecodeError:
+                print("\u001b[31mERROR!\u001b[0m cannot decode as utf-8 character!")
+            
+    except subprocess.CalledProcessError:
         error_count += 1
         error_filenames.append(file)
 

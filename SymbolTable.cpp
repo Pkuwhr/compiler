@@ -1,6 +1,11 @@
 #include "SymbolTable.h"
 #include "ArrayInfo.h"
 
+#define GREEN printf("\u001b[32m");
+#define YELLOW printf("\u001b[33m");
+#define BLUE printf("\u001b[34m");
+#define RESET printf("\u001b[0m");
+
 extern ArrayInitVal ZERO, LEFT, RIGHT;
 
 GlobalScope *AddLocalIntoGlobal(GlobalScope *global_scope,
@@ -366,6 +371,8 @@ void DisplayArrayInfo(ArrayInfo *array_info) {
 }
 
 void DisplayLocalScope(LocalScope *symtable) {
+  YELLOW
+
   if (!symtable) {
     puts("[ Empty Scope ]");
     return;
@@ -379,6 +386,7 @@ void DisplayLocalScope(LocalScope *symtable) {
       // 打印内嵌作用域信息
       printf("Embedded Scope [ %s ]: \n", e->name);
       DisplayLocalScope(e->embedded_scope);
+      YELLOW
     } else if (e->is_array) {
       // 打印数组信息
       printf("\nArray [ %s ]: \n", e->name);
@@ -388,6 +396,7 @@ void DisplayLocalScope(LocalScope *symtable) {
       else
         printf("no\n");
       DisplayArrayInfo(e->array_info);
+      YELLOW
     } else {
       // 打印变量信息
       printf("\nVariable [ %s ]: \n", e->name);
@@ -403,6 +412,8 @@ void DisplayLocalScope(LocalScope *symtable) {
 }
 
 void DisplayFormalScope(FormalScope *symtable) {
+  GREEN
+
   printf("\t");
 
   if (!symtable) {
@@ -416,7 +427,6 @@ void DisplayFormalScope(FormalScope *symtable) {
 
     if (e->is_array) {
       printf("Array [ %s ]\t", e->name);
-      // TODO: 打印数组维度
 
     } else {
       printf("Variable [ %s ]\t", e->name);
@@ -427,6 +437,8 @@ void DisplayFormalScope(FormalScope *symtable) {
 }
 
 void DisplayGlobalScope(GlobalScope *symtable) {
+  BLUE
+
   if (!symtable) {
     puts("[ Empty Scope ]");
     return;
@@ -449,22 +461,25 @@ void DisplayGlobalScope(GlobalScope *symtable) {
 
       printf("Function [ %s ]'s Formal Scope: \n", e->name);
       DisplayFormalScope(e->formal_scope);
+      BLUE
       printf("Function [ %s ]'s Local Scope: \n", e->name);
       DisplayLocalScope(e->local_scope);
+      BLUE
 
     } else if (e->is_array) {
       // 打印数组信息
-      printf("\nArray [ %s ]: \n", e->name);
+      printf("\nGlobal Array [ %s ]: \n", e->name);
       printf("\tConstant: ");
       if (e->is_const)
         printf("yes\n");
       else
         printf("no\n");
       DisplayArrayInfo(e->array_info);
+      BLUE
 
     } else {
       // 打印变量信息
-      printf("\nVariable [ %s ]: \n", e->name);
+      printf("\nGlobal Variable [ %s ]: \n", e->name);
       printf("\tConstant: ");
       if (e->is_const) {
         printf("yes\t");
@@ -474,4 +489,6 @@ void DisplayGlobalScope(GlobalScope *symtable) {
       }
     }
   }
+
+  RESET
 }
