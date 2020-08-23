@@ -6,6 +6,13 @@ ArrayInitVal ZERO, LEFT, RIGHT;
 int ArrayInfo::size() { return this->dims->size(); }
 
 void ArrayInfo::init() {
+  if (!raw_values) return;
+  init_values = (vector<ArrayInitValue> *)malloc(sizeof(vector<ArrayInitValue>));
+  if (!init_values) {
+    puts("Error: Cannot malloc space for init_values vector!!");
+    exit(-1);
+  }
+
   ZERO.type = Value;
   ZERO.value = 0;
   LEFT.type = Begin;

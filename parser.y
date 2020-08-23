@@ -189,7 +189,7 @@ ConstArraySubSeq: // dims - 这里的 vector 包含第一维长度
     if (!$2->is_constant_expr) {
         yyerror("Line %d: ConstExp needed!", yylineno);
     }
-    $$->dims = AppendDim($$->dims, $2->expr_value);
+    $$->dims = AppendDim(NULL, $2->expr_value);
 }
 | ConstArraySubSeq '[' Exp ']' {
     $$ = CreateGrammarTree(ConstArraySubSeq, 2, $1, $3);
@@ -393,6 +393,8 @@ BlockItem: // LocalScope
 }
 |   Stmt {
     $$ = CreateGrammarTree(BlockItem, 1, $1);
+
+    // 一个 Stmt 里可能有多个 embedded scope
     $$->local_scope = AddLocalIntoLocal($$->local_scope, $1->local_scope);
 }
 ;
@@ -417,18 +419,18 @@ Stmt: // LocalScope
 |   T_If '(' Exp ')' Stmt %prec T_NoElse {
     $$ = CreateGrammarTree(Stmt, 3, $1, $3, $5);
     // add 1 entry
-    $$->local_scope = AddEntryIntoLocalScope($$->local_scope, $5->local_entry);
+    $$->local_scope = AddLocalIntoLocal($$->local_scope, $5->local_scope);
 }
 |   T_If '(' Exp ')' Stmt T_Else Stmt {
     $$ = CreateGrammarTree(Stmt, 5, $1, $3, $5, $6, $7);
-    // add 2 entries
-    $$->local_scope = AddEntryIntoLocalScope($$->local_scope, $5->local_entry);
-    $$->local_scope = AddEntryIntoLocalScope($$->local_scope, $7->local_entry);
+    // 把 Stmt 中的 entries 加入 $$ 中
+    $$->local_scope = AddLocalIntoLocal($$->local_scope, $5->local_scope);
+    $$->local_scope = AddLocalIntoLocal($$->local_scope, $7->local_scope);
 }
 |   T_While '(' Exp ')' Stmt {
     $$ = CreateGrammarTree(Stmt, 3, $1, $3, $5);
     // add 1 entry
-    $$->local_scope = AddEntryIntoLocalScope($$->local_scope, $5->local_entry);
+    $$->local_scope = AddLocalIntoLocal($$->local_scope, $5->local_scope);
 }
 |   T_Break ';' {
     $$ = CreateGrammarTree(Stmt, 1, $1);

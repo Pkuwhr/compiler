@@ -1,12 +1,3 @@
-'''
-@Date: 2020-06-17 14:09:42
-@LastEditors: zyk
-@LastEditTime: 2020-06-17 15:40:36
-@FilePath: /compiler/AutoTest.py
-'''
-
-# TODO: 目前只能检查编译程序是否异常退出和打印编译器输出，后续增加输入输出比较模块
-
 import os
 import re
 import argparse
@@ -40,15 +31,20 @@ else:
 
 # run test and check if the compiler returns 0
 error_count = 0
+error_filenames = list() # save file names with errors
+
 for file in test_file:
     if args.verbose:
         print("Compiling", file)
     try:
-        out = subprocess.check_output(['./compiler', test_dir + file], stderr=subprocess.STDOUT).decode('utf-8')
+        out = subprocess.check_output(['./compiler', test_dir + file], stderr=subprocess.STDOUT)
         if args.verbose:
             print(out)
     except subprocess.CalledProcessError as e:
         error_count += 1
+        error_filenames.append(file)
 
-print(len(test_file), "file(s) tested,", error_count, "errors occurred.")
-    
+print(len(test_file), "file(s) tested,", error_count, "error(s) occurred.")
+if (error_count > 0):
+    print("\nPlease check these files:\n")
+    print('\n'.join(error_filenames))

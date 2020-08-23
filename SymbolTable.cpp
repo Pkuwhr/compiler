@@ -3,9 +3,10 @@
 
 extern ArrayInitVal ZERO, LEFT, RIGHT;
 
-GlobalScope *AddLocalIntoGlobal(GlobalScope *global_scope, LocalScope *local_scope) {
+GlobalScope *AddLocalIntoGlobal(GlobalScope *global_scope,
+                                LocalScope *local_scope) {
   if (global_scope == nullptr) {
-    global_scope = (GlobalScope *)malloc(sizeof(GlobalScope));
+    global_scope = new vector<GlobalScopeEntry *>(1);
     if (!global_scope) {
       puts("Error: Cannot malloc space for GlobalScope vector!!");
       exit(-1);
@@ -70,11 +71,12 @@ LocalScope *AddLocalIntoLocal(LocalScope *head, LocalScope *tail) {
   return head;
 }
 
-GlobalScope *AddEntryIntoGlobalScope(GlobalScope *scope, GlobalScopeEntry *entry) {
+GlobalScope *AddEntryIntoGlobalScope(GlobalScope *scope,
+                                     GlobalScopeEntry *entry) {
   if (!entry)
     return scope;
   if (!scope) {
-    scope = (GlobalScope *)malloc(sizeof(GlobalScope));
+    scope = new vector<GlobalScopeEntry *>(1);
     if (!scope) {
       puts("Error: Cannot malloc space for GlobalScope vector!!");
       exit(-1);
@@ -83,14 +85,15 @@ GlobalScope *AddEntryIntoGlobalScope(GlobalScope *scope, GlobalScopeEntry *entry
   }
 
   scope->push_back(entry);
-  return scope;  
+  return scope;
 }
 
-FormalScope *AddEntryIntoFormalScope(FormalScope *scope, FormalScopeEntry *entry) {
+FormalScope *AddEntryIntoFormalScope(FormalScope *scope,
+                                     FormalScopeEntry *entry) {
   if (!entry)
     return scope;
   if (!scope) {
-    scope = (FormalScope *)malloc(sizeof(FormalScope));
+    scope = new vector<FormalScopeEntry *>(1);
     if (!scope) {
       puts("Error: Cannot malloc space for FormalScope vector!!");
       exit(-1);
@@ -99,14 +102,14 @@ FormalScope *AddEntryIntoFormalScope(FormalScope *scope, FormalScopeEntry *entry
   }
 
   scope->push_back(entry);
-  return scope;  
+  return scope;
 }
 
 LocalScope *AddEntryIntoLocalScope(LocalScope *scope, LocalScopeEntry *entry) {
   if (!entry)
     return scope;
   if (!scope) {
-    scope = (LocalScope *)malloc(sizeof(LocalScope));
+    scope = new vector<LocalScopeEntry *>(1);
     if (!scope) {
       puts("Error: Cannot malloc space for LocalScope vector!!");
       exit(-1);
@@ -125,10 +128,11 @@ LocalScope *AttachTypeToLocalScope(LocalScope *scope, bool _is_const) {
   return scope;
 }
 
-vector<ArrayInitValue> *NewInitValue(vector<ArrayInitValue> *values, int type, int value, GrammarTree expr) {
+vector<ArrayInitValue> *NewInitValue(vector<ArrayInitValue> *values, int type,
+                                     int value, GrammarTree expr) {
   // 判断 values 是否为空
   if (!values) {
-    values = (vector<ArrayInitValue> *)malloc(sizeof(vector<ArrayInitValue>));
+    values = new vector<ArrayInitValue>(1);
     if (!values) {
       puts("Error: Cannot malloc space for InitValues vector!!");
       exit(-1);
@@ -141,22 +145,24 @@ vector<ArrayInitValue> *NewInitValue(vector<ArrayInitValue> *values, int type, i
     puts("Error: Cannot malloc space for ArrayInitValue!!");
     exit(-1);
   }
-  a->type = (InitValType) type;
+  a->type = (InitValType)type;
   if (type == Expr)
     a->expr = expr;
   else if (type == Value)
     a->value = value;
-  
+
   values->push_back(a);
   return values;
 }
 
-vector<ArrayInitVal *> *AppendInitValue(vector<ArrayInitValue> *head, vector<ArrayInitValue> *tail, bool add_par) {
+vector<ArrayInitVal *> *AppendInitValue(vector<ArrayInitValue> *head,
+                                        vector<ArrayInitValue> *tail,
+                                        bool add_par) {
   // 判断 head 和 tail 是否为空
   if (add_par) {
     // 判断 head 是否为 null
     if (!head) {
-      head = (vector<ArrayInitValue> *)malloc(sizeof(vector<ArrayInitValue>));
+      head = new vector<ArrayInitValue>(1);
       if (!head) {
         puts("Error: Cannot malloc space for ArrayInitValue vector!!");
         exit(-1);
@@ -165,11 +171,13 @@ vector<ArrayInitVal *> *AppendInitValue(vector<ArrayInitValue> *head, vector<Arr
     }
     // 向 head 中添加元素
     head->push_back(&LEFT);
-    for (vector<ArrayInitValue>::iterator it = tail->begin(); it != tail->end(); it++) {
-      head->push_back(*it);
+    if (tail) {
+      for (vector<ArrayInitValue>::iterator it = tail->begin();
+           it != tail->end(); it++) {
+        head->push_back(*it);
+      }
     }
     head->push_back(&RIGHT);
-
 
   } else {
     if (!head && !tail)
@@ -177,11 +185,12 @@ vector<ArrayInitVal *> *AppendInitValue(vector<ArrayInitValue> *head, vector<Arr
 
     else if (!head)
       return tail;
-    
+
     else if (!tail)
       return head;
 
-    for (vector<ArrayInitValue>::iterator it = tail->begin(); it != tail->end(); it++) {
+    for (vector<ArrayInitValue>::iterator it = tail->begin(); it != tail->end();
+         it++) {
       head->push_back(*it);
     }
   }
@@ -191,7 +200,7 @@ vector<ArrayInitVal *> *AppendInitValue(vector<ArrayInitValue> *head, vector<Arr
 vector<int> *AppendDim(vector<int> *dims, int d) {
   if (!dims) {
     // 分配新的 vector
-    dims = (vector<int> *)malloc(sizeof(vector<int>));
+    dims = new vector<int>(1);
     if (!dims) {
       puts("Error: Cannot malloc space for Dims vector!!");
       exit(-1);
@@ -205,36 +214,41 @@ vector<int> *AppendDim(vector<int> *dims, int d) {
 
 vector<int> *InsertDim1(vector<int> *dims) {
   // TODO: 此函数只在 构造 ArraySubSep 时使用 故暂不实现
-  if (!dims) return nullptr;
-  
+  if (!dims)
+    return nullptr;
+
   dims->insert(dims->begin(), 0);
   return dims;
 }
 
-ArrayInfo *NewArrayInfo(vector<int> *_dims, vector<ArrayInitValue> *_raw_values) {
+ArrayInfo *NewArrayInfo(vector<int> *_dims,
+                        vector<ArrayInitValue> *_raw_values) {
   ArrayInfo *a = (ArrayInfo *)malloc(sizeof(ArrayInfo));
 
   a->dims = _dims;
   a->raw_values = _raw_values;
-  
+
   return a;
 }
 
-LocalScopeEntry *NewLocalArrayEntry(char *_name, bool _is_const, ArrayInfo *_array_info) {
+LocalScopeEntry *NewLocalArrayEntry(char *_name, bool _is_const,
+                                    ArrayInfo *_array_info) {
   // 分配内存空间
   LocalScopeEntry *e = (LocalScopeEntry *)malloc(sizeof(LocalScopeEntry));
   // 给各字段赋值
   e->name = _name;
   e->is_const = _is_const;
   e->array_info = _array_info;
-  
+
   e->is_array = true;
   e->is_block = false;
 
   return e;
 }
 // int / const int
-LocalScopeEntry *NewLocalIntEntry(char *_name, bool _is_const, int _int_init_value, GrammarTree _int_init_expr) {
+LocalScopeEntry *NewLocalIntEntry(char *_name, bool _is_const,
+                                  int _int_init_value,
+                                  GrammarTree _int_init_expr) {
   // 分配内存空间
   LocalScopeEntry *e = (LocalScopeEntry *)malloc(sizeof(LocalScopeEntry));
   // 给各字段赋值
@@ -244,7 +258,7 @@ LocalScopeEntry *NewLocalIntEntry(char *_name, bool _is_const, int _int_init_val
     e->int_init_value = _int_init_value;
   else
     e->int_init_expr = _int_init_expr;
-  
+
   e->is_array = false;
   e->is_block = false;
 
@@ -259,15 +273,16 @@ LocalScopeEntry *NewEmbeddedScopeEntry(LocalScope *_embedded_scope) {
   e->name = "Block";
   e->is_block = true;
   e->embedded_scope = _embedded_scope;
-  
+
   e->is_array = false;
   e->is_const = false;
-  
+
   return e;
 }
 
 // 2. 新建一个 formal_entry
-FormalScopeEntry *NewFormalEntry(char *_name, bool _is_array, ArrayInfo *_array_info) {
+FormalScopeEntry *NewFormalEntry(char *_name, bool _is_array,
+                                 ArrayInfo *_array_info) {
   FormalScopeEntry *e = (FormalScopeEntry *)malloc(sizeof(FormalScopeEntry));
 
   e->name = _name;
@@ -278,7 +293,9 @@ FormalScopeEntry *NewFormalEntry(char *_name, bool _is_array, ArrayInfo *_array_
 }
 
 // 3. 新建一个 global_entry
-GlobalScopeEntry *NewGlobalIntEntry(char *_name, bool _is_const, int _int_init_value, GrammarTree _int_init_expr) {
+GlobalScopeEntry *NewGlobalIntEntry(char *_name, bool _is_const,
+                                    int _int_init_value,
+                                    GrammarTree _int_init_expr) {
   // 分配内存空间
   GlobalScopeEntry *e = (GlobalScopeEntry *)malloc(sizeof(GlobalScopeEntry));
 
@@ -288,7 +305,7 @@ GlobalScopeEntry *NewGlobalIntEntry(char *_name, bool _is_const, int _int_init_v
     e->int_init_value = _int_init_value;
   else
     e->int_init_expr = _int_init_expr;
-  
+
   e->is_func = false;
   e->is_void = false;
   e->is_array = false;
@@ -298,13 +315,14 @@ GlobalScopeEntry *NewGlobalIntEntry(char *_name, bool _is_const, int _int_init_v
   return e;
 }
 
-GlobalScopeEntry *NewGlobalArrayEntry(char *_name, bool _is_const, ArrayInfo *_array_info) {
+GlobalScopeEntry *NewGlobalArrayEntry(char *_name, bool _is_const,
+                                      ArrayInfo *_array_info) {
   GlobalScopeEntry *e = (GlobalScopeEntry *)malloc(sizeof(GlobalScopeEntry));
 
   e->name = _name;
   e->is_const = _is_const;
   e->array_info = _array_info;
-  
+
   e->is_func = false;
   e->is_void = false;
   e->is_array = true;
@@ -314,7 +332,10 @@ GlobalScopeEntry *NewGlobalArrayEntry(char *_name, bool _is_const, ArrayInfo *_a
   return e;
 }
 
-GlobalScopeEntry *NewFunctionEntry(char *_name, bool _is_void, int _formal_count, FormalScope *_formal_scope, LocalScope *_local_scope) {
+GlobalScopeEntry *NewFunctionEntry(char *_name, bool _is_void,
+                                   int _formal_count,
+                                   FormalScope *_formal_scope,
+                                   LocalScope *_local_scope) {
   GlobalScopeEntry *e = (GlobalScopeEntry *)malloc(sizeof(GlobalScopeEntry));
 
   e->name = _name;
@@ -322,7 +343,7 @@ GlobalScopeEntry *NewFunctionEntry(char *_name, bool _is_void, int _formal_count
   e->formal_count = _formal_count;
   e->formal_scope = _formal_scope;
   e->local_scope = _local_scope;
-  
+
   e->is_func = true;
   e->is_array = false;
   e->is_const = false;
@@ -336,7 +357,8 @@ void DisplayArrayInfo(ArrayInfo *array_info) {
   // 打印维度
   else {
     printf("Dimensions:");
-    for (vector<int>::iterator it = array_info->dims->begin(); it != array_info->dims->end(); it++) {
+    for (vector<int>::iterator it = array_info->dims->begin();
+         it != array_info->dims->end(); it++) {
       printf("[ %d ]", *it);
     }
     printf("\n");
@@ -349,7 +371,8 @@ void DisplayLocalScope(LocalScope *symtable) {
     return;
   }
 
-  for (LocalScope::iterator it = symtable->begin(); it != symtable->end(); it++) {
+  for (LocalScope::iterator it = symtable->begin(); it != symtable->end();
+       it++) {
     LocalScopeEntry *e = *it;
 
     if (e->is_block) {
@@ -360,19 +383,21 @@ void DisplayLocalScope(LocalScope *symtable) {
       // 打印数组信息
       printf("\nArray [ %s ]: \n", e->name);
       printf("\tConstant: ");
-      if (e->is_const) printf("yes\n"); else printf("no\n");
+      if (e->is_const)
+        printf("yes\n");
+      else
+        printf("no\n");
       DisplayArrayInfo(e->array_info);
     } else {
       // 打印变量信息
       printf("\nVariable [ %s ]: \n", e->name);
       printf("\tConstant: ");
       if (e->is_const) {
-        printf("yes\t"); 
+        printf("yes\t");
         printf("Value: %d\n", e->int_init_value);
-      }
-      else {
+      } else {
         printf("no\n");
-      } 
+      }
     }
   }
 }
@@ -385,16 +410,16 @@ void DisplayFormalScope(FormalScope *symtable) {
     return;
   }
 
-  for (FormalScope::iterator it = symtable->begin(); it != symtable->end(); it++) {
+  for (FormalScope::iterator it = symtable->begin(); it != symtable->end();
+       it++) {
     FormalScopeEntry *e = *it;
 
     if (e->is_array) {
       printf("Array [ %s ]\t", e->name);
       // TODO: 打印数组维度
-    
+
     } else {
       printf("Variable [ %s ]\t", e->name);
-
     }
   }
 
@@ -407,7 +432,8 @@ void DisplayGlobalScope(GlobalScope *symtable) {
     return;
   }
 
-  for (GlobalScope::iterator it = symtable->begin(); it != symtable->end(); it++) {
+  for (GlobalScope::iterator it = symtable->begin(); it != symtable->end();
+       it++) {
     GlobalScopeEntry *e = *it;
 
     if (e->is_func) {
@@ -415,32 +441,37 @@ void DisplayGlobalScope(GlobalScope *symtable) {
       printf("\nFunction [ %s ]: \n", e->name);
       // 返回 void / 参数个数 / 形参 / 函数体
       printf("\tReturn Void: ");
-      if (e->is_void) printf("yes\t"); else printf("no\t\t");
+      if (e->is_void)
+        printf("yes\t");
+      else
+        printf("no\t\t");
       printf("Formals: %d\n", e->formal_count);
 
       printf("Function [ %s ]'s Formal Scope: \n", e->name);
       DisplayFormalScope(e->formal_scope);
       printf("Function [ %s ]'s Local Scope: \n", e->name);
       DisplayLocalScope(e->local_scope);
-    
+
     } else if (e->is_array) {
       // 打印数组信息
       printf("\nArray [ %s ]: \n", e->name);
       printf("\tConstant: ");
-      if (e->is_const) printf("yes\n"); else printf("no\n");
+      if (e->is_const)
+        printf("yes\n");
+      else
+        printf("no\n");
       DisplayArrayInfo(e->array_info);
-    
+
     } else {
       // 打印变量信息
       printf("\nVariable [ %s ]: \n", e->name);
       printf("\tConstant: ");
       if (e->is_const) {
-        printf("yes\t"); 
+        printf("yes\t");
         printf("Value: %d\n", e->int_init_value);
-      }
-      else {
+      } else {
         printf("no\n");
-      } 
+      }
     }
   }
 }
